@@ -1,5 +1,3 @@
-version: "3.8"
-
 # ─────────────────────────────────────────────────────────────────────────────
 # Vehicle Service Management System — Docker Compose
 # Oracle Database Free (slim) running inside a local container
@@ -21,8 +19,10 @@ services:
     volumes:
       # Persist Oracle data files across container restarts
       - oracle_data:/opt/oracle/oradata
-      # Any *.sql file dropped here runs automatically on first startup
-      - ./db:/container-entrypoint-initdb.d:ro
+      # Mount 01_init.sh to container to run automatically on first startup
+      - ./db/01_init.sh:/container-entrypoint-initdb.d/01_init.sh:ro
+      # Mount schema.sql file to run by 01_init.sh
+      - ./db/schema.sql:/opt/oracle/scripts/schema.sql:ro
     healthcheck:
       test: ["CMD", "sqlplus", "-L", "garage_user/GaragePass#2025@//localhost:1521/FREEPDB1",
              "@/dev/null"]

@@ -15,11 +15,24 @@
 -- =============================================================================
 
 -- =============================================================================
--- SECTION 0 — SYSTEM & DB  CONFIGURATION
+-- SECTION 0 — SYSTEM & DB CONFIGURATION 
 -- =============================================================================
 
-SET DEFINE OFF;
+-- Fail-Fast ROLLBACK Gaurd
+WHENEVER SQLERROR EXIT SQL.SQLCODE ROLLBACK;
 
+-- DECLARE
+--     v_schema VARCHAR2(30);
+-- BEGIN
+--     SELECT SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA') INTO v_schema FROM DUAL;
+--     IF v_schema != 'GARAGE_USER' THEN
+--         RAISE_APPLICATION_ERROR(-20001,
+--             'Wrong schema context: ' || v_schema);
+--     END IF;
+-- END;
+-- /
+
+SET DEFINE OFF;
 
 -- =============================================================================
 -- SECTION 1 — DROP OBJECTS (idempotent re-run safety)
@@ -101,7 +114,7 @@ CREATE SEQUENCE INVOICE_ITEMS_SEQ
 --     Each customer is uniquely identified by their phone number (business key).
 -- -----------------------------------------------------------------------------
 CREATE TABLE CUSTOMERS (
-    CUSTOMER_ID     NUMBER          NOT NULL,
+    CUSTOMER_ID     NUMBER          DEFAULT CUSTOMERS_SEQ.NEXTVAL NOT NULL,
     CUSTOMER_NAME   VARCHAR2(120)   NOT NULL,
     PHONE           VARCHAR2(15)    NOT NULL,
     EMAIL           VARCHAR2(150),
@@ -119,7 +132,7 @@ CREATE TABLE CUSTOMERS (
 --     REGISTRATION_NO is the natural business key (number plate).
 -- -----------------------------------------------------------------------------
 CREATE TABLE VEHICLES (
-    VEHICLE_ID       NUMBER          NOT NULL,
+    VEHICLE_ID       NUMBER          DEFAULT VEHICLES_SEQ.NEXTVAL NOT NULL,
     CUSTOMER_ID      NUMBER          NOT NULL,
     REGISTRATION_NO  VARCHAR2(20)    NOT NULL,
     MAKE             VARCHAR2(60)    NOT NULL,   -- e.g., Toyota
@@ -145,7 +158,7 @@ CREATE TABLE VEHICLES (
 --     Labour rates are stored here; parts are added per job card via INVOICE_ITEMS.
 -- -----------------------------------------------------------------------------
 CREATE TABLE SERVICES (
-    SERVICE_ID      NUMBER          NOT NULL,
+    SERVICE_ID      NUMBER          DEFAULT SERVICES_SEQ.NEXTVAL NOT NULL,
     SERVICE_NAME    VARCHAR2(120)   NOT NULL,
     DESCRIPTION     VARCHAR2(500),
     LABOUR_RATE     NUMBER(10,2)    NOT NULL,   -- Rate per unit (per hour or fixed)
@@ -163,11 +176,11 @@ CREATE TABLE SERVICES (
 --     Tracks status lifecycle, assigned technician, and service details.
 -- -----------------------------------------------------------------------------
 CREATE TABLE JOB_CARDS (
-    JOB_CARD_ID     NUMBER          NOT NULL,
+    JOB_CARD_ID     NUMBER          DEFAULT JOB_CARDS_SEQ.NEXTVAL NOT NULL,
     VEHICLE_ID      NUMBER          NOT NULL,
     SERVICE_ID      NUMBER          NOT NULL,
     TECHNICIAN_NAME VARCHAR2(120),
-    STATUS          VARCHAR2(15)    NOT NULL    DEFAULT 'BOOKED',
+    STATUS          VARCHAR2(15)    DEFAULT 'BOOKED'     NOT NULL,
     APPOINTMENT_DT  TIMESTAMP       NOT NULL,
     START_DT        TIMESTAMP,
     COMPLETION_DT   TIMESTAMP,
@@ -193,7 +206,7 @@ CREATE TABLE JOB_CARDS (
 --     acceptable and documented in DATABASE.md).
 -- -----------------------------------------------------------------------------
 CREATE TABLE INVOICES (
-    INVOICE_ID      NUMBER          NOT NULL,
+    INVOICE_ID      NUMBER          DEFAULT INVOICES_SEQ.NEXTVAL NOT NULL,
     JOB_CARD_ID     NUMBER          NOT NULL,
     INVOICE_DATE    TIMESTAMP       DEFAULT SYSTIMESTAMP NOT NULL,
     LABOUR_TOTAL    NUMBER(12,2)    DEFAULT 0   NOT NULL,
@@ -221,7 +234,7 @@ CREATE TABLE INVOICES (
 --     ITEM_TYPE distinguishes between 'LABOUR' and 'PART'.
 -- -----------------------------------------------------------------------------
 CREATE TABLE INVOICE_ITEMS (
-    ITEM_ID         NUMBER          NOT NULL,
+    ITEM_ID         NUMBER          DEFAULT INVOICE_ITEMS_SEQ.NEXTVAL NOT NULL,
     INVOICE_ID      NUMBER          NOT NULL,
     ITEM_TYPE       VARCHAR2(10)    NOT NULL,    -- 'LABOUR' or 'PART'
     DESCRIPTION     VARCHAR2(200)   NOT NULL,
@@ -326,9 +339,6 @@ CREATE INDEX IDX_JOB_CARDS_APPT_DT  ON JOB_CARDS (APPOINTMENT_DT);
 
 -- Invoice item lookup by invoice
 CREATE INDEX IDX_INV_ITEMS_INVOICE  ON INVOICE_ITEMS (INVOICE_ID);
-
--- Customer lookup by phone
-CREATE INDEX IDX_CUSTOMERS_PHONE    ON CUSTOMERS (PHONE);
 
 
 -- =============================================================================
