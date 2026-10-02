@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- ── Project Coordinates ──────────────────────────────────────────── -->
+    <groupId>com.garage</groupId>
+    <artifactId>vehicle-service-mgmt</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>jar</packaging>
+
+    <name>Vehicle Service Management System</name>
+    <description>
+        Academic Java Mini-Project: Standalone Swing + JDBC desktop application
+        for garage service management (UIT3361 + UIT3311).
+    </description>
+
+    <!-- ── Properties ───────────────────────────────────────────────────── -->
+    <properties>
+        <java.version>17</java.version>
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+        <!-- Dependency versions -->
+        <ojdbc11.version>23.4.0.24.05</ojdbc11.version>
+        <dotenv.version>3.0.0</dotenv.version>
+        <!-- Plugin versions -->
+        <maven.compiler.plugin.version>3.13.0</maven.compiler.plugin.version>
+        <exec.plugin.version>3.3.0</exec.plugin.version>
+        <jar.plugin.version>3.4.1</jar.plugin.version>
+        <!-- Main class -->
+        <main.class>com.garage.ui.MainApp</main.class>
+    </properties>
+
+    <!-- ── Dependencies ─────────────────────────────────────────────────── -->
+    <dependencies>
+
+        <!-- Oracle JDBC Driver (thin) — requires Oracle Maven repository or
+             manual install. See README for details. -->
+        <dependency>
+            <groupId>com.oracle.database.jdbc</groupId>
+            <artifactId>ojdbc11</artifactId>
+            <version>${ojdbc11.version}</version>
+        </dependency>
+
+        <!-- dotenv-java: loads key=value pairs from .env file into System env -->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>${dotenv.version}</version>
+        </dependency>
+
+    </dependencies>
+
+    <!-- ── Repositories ─────────────────────────────────────────────────── -->
+    <!-- Oracle JDBC is published to Maven Central starting with 21c drivers -->
+    <!-- No extra repository entry needed for ojdbc11 23c on Central. -->
+
+    <!-- ── Build ────────────────────────────────────────────────────────── -->
+    <build>
+        <plugins>
+
+            <!-- 1. Compiler Plugin: enforce Java 17 release (cross-compile safe) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.plugin.version}</version>
+                <configuration>
+                    <release>${java.version}</release>
+                    <compilerArgs>
+                        <arg>-Xlint:unchecked</arg>
+                        <arg>-Xlint:deprecation</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+
+            <!-- 2. Exec Plugin: run the Swing application without building fat jar -->
+            <!--    Usage: mvn exec:java                                           -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>${exec.plugin.version}</version>
+                <configuration>
+                    <mainClass>${main.class}</mainClass>
+                </configuration>
+            </plugin>
+
+            <!-- 3. JAR Plugin: embed manifest with Main-Class for runnable jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>${jar.plugin.version}</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <mainClass>${main.class}</mainClass>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>lib/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                    <finalName>vehicle-service-mgmt</finalName>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
+
+</project>

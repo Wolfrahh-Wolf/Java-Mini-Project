@@ -1,0 +1,44 @@
+version: "3.8"
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Vehicle Service Management System — Docker Compose
+# Oracle Database Free (slim) running inside a local container
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+  oracle-db:
+    image: gvenzl/oracle-free:slim
+    container_name: vsms_oracle
+    restart: unless-stopped
+    ports:
+      - "1521:1521"   # Oracle TNS listener
+      - "5500:5500"   # Oracle Enterprise Manager Express (optional)
+    environment:
+      # These environment variables are read by the gvenzl image on first boot
+      ORACLE_PASSWORD: GaragePass#2025          # SYS / SYSTEM password
+      APP_USER: garage_user                     # Application schema user
+      APP_USER_PASSWORD: GaragePass#2025        # Application schema password
+    volumes:
+      # Persist Oracle data files across container restarts
+      - oracle_data:/opt/oracle/oradata
+      # Any *.sql file dropped here runs automatically on first startup
+      - ./db:/container-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "sqlplus", "-L", "garage_user/GaragePass#2025@//localhost:1521/FREEPDB1",
+             "@/dev/null"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 120s   # Oracle XE needs up to 2 min to fully initialise
+
+volumes:
+  oracle_data:
+    driver: local
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Quick-start:
+#   docker compose up -d
+#   docker compose logs -f oracle-db      # watch until "DATABASE IS READY"
+# Connection string for the app:
+#   jdbc:oracle:thin:@localhost:1521/FREEPDB1
+# ─────────────────────────────────────────────────────────────────────────────
