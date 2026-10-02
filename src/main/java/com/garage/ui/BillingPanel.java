@@ -19,8 +19,10 @@ import com.garage.service.BillingService;
 import com.garage.util.DBConnection;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -98,12 +100,12 @@ public class BillingPanel extends JPanel {
      * Constructs the BillingPanel and assembles all sub-sections.
      */
     public BillingPanel() {
-        setLayout(new BorderLayout(0, 6));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setLayout(new BorderLayout(0, 0));
+        setBackground(FluentTheme.CANVAS);
 
-        add(buildSearchSection(),  BorderLayout.NORTH);
-        add(buildMainSection(),    BorderLayout.CENTER);
-        add(buildStatusBar(),      BorderLayout.SOUTH);
+        add(buildSearchCard(),  BorderLayout.NORTH);
+        add(buildMainSection(), BorderLayout.CENTER);
+        add(buildStatusBar(),   BorderLayout.SOUTH);
 
         updateButtonStates(false);
     }
@@ -111,137 +113,162 @@ public class BillingPanel extends JPanel {
     // ── UI Builders ───────────────────────────────────────────────────────────
 
     /**
-     * Builds the job card lookup section at the top.
+     * Builds the job card lookup card at the top.
      *
-     * @return the search panel
+     * @return the search card panel
      */
-    private JPanel buildSearchSection() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Load Invoice by Job Card ID",
-            TitledBorder.LEFT, TitledBorder.TOP));
+    private JPanel buildSearchCard() {
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.SURFACE);
+        card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
 
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 6, 4, 6);
-        gbc.anchor = GridBagConstraints.WEST;
+        card.add(FluentTheme.sectionHeader("Load Invoice by Job Card ID"), BorderLayout.NORTH);
 
-        // Row 0
-        gbc.gridx = 0; gbc.gridy = 0;
-        panel.add(new JLabel("Job Card ID:"), gbc);
+        JPanel inner = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+        inner.setBackground(FluentTheme.SURFACE);
+        inner.setBorder(new EmptyBorder(0, FluentTheme.PADDING, 4, FluentTheme.PADDING));
+
+        JLabel lbl = new JLabel("Job Card ID:");
+        lbl.setFont(FluentTheme.FONT_BODY);
+        lbl.setForeground(FluentTheme.TEXT_MUTED);
+        inner.add(lbl);
 
         jobCardIdField = new JTextField(8);
+        FluentTheme.styleTextField(jobCardIdField);
         jobCardIdField.setToolTipText("Enter the Job Card number (e.g., 1)");
-        gbc.gridx = 1;
-        panel.add(jobCardIdField, gbc);
+        inner.add(jobCardIdField);
 
-        JButton loadBtn = new JButton("Load / Find Invoice");
+        JButton loadBtn = FluentTheme.secondaryButton("Load / Find Invoice");
         loadBtn.setMnemonic('L');
         loadBtn.addActionListener(e -> onLoadInvoice());
-        gbc.gridx = 2;
-        panel.add(loadBtn, gbc);
+        inner.add(loadBtn);
 
-        generateBtn = new JButton("Generate New Invoice");
+        generateBtn = FluentTheme.accentButton("Generate New Invoice");
         generateBtn.setMnemonic('G');
         generateBtn.addActionListener(e -> onGenerateInvoice());
         generateBtn.setEnabled(false);
-        gbc.gridx = 3;
-        panel.add(generateBtn, gbc);
+        inner.add(generateBtn);
 
-        return panel;
+        card.add(inner, BorderLayout.CENTER);
+        return card;
     }
 
     /**
-     * Builds the main area: invoice header left, line items centre, summary right.
+     * Builds the main area: invoice header + line items + summary.
      *
      * @return the main content panel
      */
     private JComponent buildMainSection() {
-        JPanel outer = new JPanel(new BorderLayout(6, 0));
+        JPanel outer = new JPanel(new BorderLayout(0, 0));
+        outer.setBackground(FluentTheme.CANVAS);
 
-        outer.add(buildHeaderSection(), BorderLayout.NORTH);
-        outer.add(buildItemsSection(),  BorderLayout.CENTER);
-        outer.add(buildSummaryPanel(),  BorderLayout.EAST);
+        outer.add(buildHeaderCard(),   BorderLayout.NORTH);
+        outer.add(buildItemsCard(),    BorderLayout.CENTER);
+        outer.add(buildSummaryPanel(), BorderLayout.EAST);
 
         return outer;
     }
 
     /**
-     * Builds the invoice header (Invoice #, date, vehicle, customer, payment status).
+     * Builds the invoice header card (Invoice #, date, vehicle, customer, payment status).
      *
-     * @return the header panel
+     * @return the header card panel
      */
-    private JPanel buildHeaderSection() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Invoice Details",
-            TitledBorder.LEFT, TitledBorder.TOP));
+    private JPanel buildHeaderCard() {
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.SURFACE);
+        card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
+        card.add(FluentTheme.sectionHeader("Invoice Details"), BorderLayout.NORTH);
+
+        JPanel grid = new JPanel(new GridBagLayout());
+        grid.setBackground(FluentTheme.SURFACE);
+        grid.setBorder(new EmptyBorder(FluentTheme.PADDING_SM, FluentTheme.PADDING,
+                                       FluentTheme.PADDING_SM, FluentTheme.PADDING));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(3, 8, 3, 8);
+        gbc.insets = new Insets(4, 8, 4, 16);
         gbc.anchor = GridBagConstraints.WEST;
 
-        Font bold = panel.getFont().deriveFont(Font.BOLD);
-
-        invoiceIdLabel   = new JLabel("—"); invoiceIdLabel.setFont(bold);
-        invoiceDateLabel = new JLabel("—");
-        vehicleLabel     = new JLabel("—");
-        customerLabel    = new JLabel("—");
-        paymentStatusBadge = new JLabel("—");
-        paymentStatusBadge.setFont(bold);
+        invoiceIdLabel   = makeValueLabel("—");
+        invoiceIdLabel.setFont(FluentTheme.FONT_SEMIBOLD);
+        invoiceDateLabel = makeValueLabel("—");
+        vehicleLabel     = makeValueLabel("—");
+        customerLabel    = makeValueLabel("—");
+        paymentStatusBadge = makeValueLabel("—");
         paymentStatusBadge.setOpaque(true);
+        paymentStatusBadge.setBorder(new EmptyBorder(2, 8, 2, 8));
 
         Object[][] rows = {
-            {"Invoice #:", invoiceIdLabel},
-            {"Date:",      invoiceDateLabel},
-            {"Vehicle:",   vehicleLabel},
-            {"Customer:",  customerLabel},
-            {"Status:",    paymentStatusBadge}
+            {"Invoice #:",  invoiceIdLabel},
+            {"Date:",       invoiceDateLabel},
+            {"Vehicle:",    vehicleLabel},
+            {"Customer:",   customerLabel},
+            {"Status:",     paymentStatusBadge}
         };
 
         for (int i = 0; i < rows.length; i++) {
             gbc.gridx = 0; gbc.gridy = i; gbc.weightx = 0;
-            panel.add(new JLabel((String) rows[i][0]), gbc);
+            JLabel capLbl = new JLabel((String) rows[i][0]);
+            capLbl.setFont(FluentTheme.FONT_BODY);
+            capLbl.setForeground(FluentTheme.TEXT_MUTED);
+            grid.add(capLbl, gbc);
             gbc.gridx = 1; gbc.weightx = 1.0;
-            panel.add((JComponent) rows[i][1], gbc);
+            grid.add((JComponent) rows[i][1], gbc);
         }
 
-        return panel;
+        card.add(grid, BorderLayout.CENTER);
+        return card;
     }
 
     /**
-     * Builds the line items section (JTable + Add Part button).
+     * Builds the line items card (JTable + Add Part button).
      *
-     * @return the items panel
+     * @return the items card panel
      */
-    private JPanel buildItemsSection() {
-        JPanel panel = new JPanel(new BorderLayout(0, 4));
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Invoice Line Items",
-            TitledBorder.LEFT, TitledBorder.TOP));
+    private JPanel buildItemsCard() {
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.CANVAS);
+        card.add(FluentTheme.sectionHeader("Invoice Line Items"), BorderLayout.NORTH);
 
         itemTableModel = new InvoiceItemTableModel();
         JTable itemTable = new JTable(itemTableModel);
-        itemTable.setRowHeight(22);
-        itemTable.setFillsViewportHeight(true);
-        itemTable.getTableHeader().setReorderingAllowed(false);
+        FluentTheme.styleTable(itemTable);
         itemTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
-        // Column widths
-        int[] widths = {60, 55, 250, 60, 90, 90};
+        // Padded renderer for string columns
+        DefaultTableCellRenderer paddedRenderer = new DefaultTableCellRenderer();
+        paddedRenderer.setBorder(new EmptyBorder(0, 12, 0, 12));
+        for (int i = 0; i < itemTableModel.getColumnCount(); i++) {
+            itemTable.getColumnModel().getColumn(i).setCellRenderer(paddedRenderer);
+        }
+
+        // Right-align currency columns
+        DefaultTableCellRenderer rightPadded = new DefaultTableCellRenderer();
+        rightPadded.setHorizontalAlignment(SwingConstants.RIGHT);
+        rightPadded.setBorder(new EmptyBorder(0, 4, 0, 12));
+        itemTable.getColumnModel().getColumn(4).setCellRenderer(rightPadded);
+        itemTable.getColumnModel().getColumn(5).setCellRenderer(rightPadded);
+
+        int[] widths = {60, 60, 260, 60, 100, 100};
         for (int i = 0; i < widths.length; i++) {
             itemTable.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
         }
 
-        panel.add(new JScrollPane(itemTable), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(itemTable);
+        scroll.setBackground(FluentTheme.SURFACE);
+        scroll.getViewport().setBackground(FluentTheme.SURFACE);
+        scroll.setBorder(BorderFactory.createLineBorder(FluentTheme.BORDER, 1));
+        card.add(scroll, BorderLayout.CENTER);
 
-        addPartBtn = new JButton("➕ Add Spare Part");
+        addPartBtn = FluentTheme.secondaryButton("➕  Add Spare Part");
         addPartBtn.setMnemonic('P');
         addPartBtn.addActionListener(e -> onAddPart());
-        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 6));
+        btnRow.setBackground(FluentTheme.CANVAS);
         btnRow.add(addPartBtn);
-        panel.add(btnRow, BorderLayout.SOUTH);
+        card.add(btnRow, BorderLayout.SOUTH);
 
-        return panel;
+        return card;
     }
 
     /**
@@ -251,57 +278,64 @@ public class BillingPanel extends JPanel {
      */
     private JPanel buildSummaryPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setPreferredSize(new Dimension(220, 0));
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Summary",
-            TitledBorder.LEFT, TitledBorder.TOP));
+        panel.setPreferredSize(new Dimension(240, 0));
+        panel.setBackground(FluentTheme.SURFACE);
+        panel.setBorder(new MatteBorder(0, 1, 0, 0, FluentTheme.BORDER));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 8, 4, 8);
+        gbc.insets = new Insets(6, 16, 6, 16);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill   = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        Font bold   = panel.getFont().deriveFont(Font.BOLD);
-        Font bigger = panel.getFont().deriveFont(Font.BOLD, 14f);
-
-        labourTotalLabel = new JLabel("₹ —");
-        partsTotalLabel  = new JLabel("₹ —");
-        taxAmountLabel   = new JLabel("₹ —");
-        grandTotalLabel  = new JLabel("₹ —");
-        grandTotalLabel.setFont(bigger);
-        grandTotalLabel.setForeground(new Color(0, 100, 0));
-
         int row = 0;
-        addSummaryRow(panel, gbc, row++, "Labour Total:",   labourTotalLabel, null);
-        addSummaryRow(panel, gbc, row++, "Parts Total:",    partsTotalLabel,  null);
-        addSummaryRow(panel, gbc, row++, "GST (18%):",      taxAmountLabel,   null);
-        addSeparator(panel, gbc, row++);
-        addSummaryRow(panel, gbc, row++, "GRAND TOTAL:", grandTotalLabel, bigger);
+        panel.add(FluentTheme.sectionHeader("Summary"), gbc);
+        gbc.gridy = ++row;
 
-        // Payment controls
+        labourTotalLabel = makeValueLabel("₹ —");
+        partsTotalLabel  = makeValueLabel("₹ —");
+        taxAmountLabel   = makeValueLabel("₹ —");
+        grandTotalLabel  = makeValueLabel("₹ —");
+        grandTotalLabel.setFont(FluentTheme.FONT_LARGE);
+        grandTotalLabel.setForeground(FluentTheme.ACCENT);
+
+        addSummaryRow(panel, gbc, row++, "Labour Total:", labourTotalLabel);
+        addSummaryRow(panel, gbc, row++, "Parts Total:",  partsTotalLabel);
+        addSummaryRow(panel, gbc, row++, "GST (18%):",    taxAmountLabel);
+
+        // Divider
         gbc.gridx = 0; gbc.gridy = row++; gbc.gridwidth = 2;
-        gbc.insets = new Insets(16, 8, 2, 8);
+        gbc.insets = new Insets(4, 8, 4, 8);
         panel.add(new JSeparator(), gbc);
 
-        gbc.insets = new Insets(4, 8, 4, 8);
-        gbc.gridy = row++;
+        addSummaryRow(panel, gbc, row++, "GRAND TOTAL:", grandTotalLabel);
+
+        // Payment controls divider
+        gbc.gridx = 0; gbc.gridy = row++; gbc.gridwidth = 2;
+        gbc.insets = new Insets(12, 8, 4, 8);
+        panel.add(new JSeparator(), gbc);
+
+        gbc.insets = new Insets(6, 16, 4, 16);
+        gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = row++;
         JLabel modeLabel = new JLabel("Payment Mode:");
-        modeLabel.setFont(bold);
+        modeLabel.setFont(FluentTheme.FONT_SEMIBOLD);
+        modeLabel.setForeground(FluentTheme.TEXT_MUTED);
         panel.add(modeLabel, gbc);
 
         paymentModeCombo = new JComboBox<>(
             new String[]{"CASH", "CARD", "UPI", "ONLINE", "CHEQUE"});
+        FluentTheme.styleCombo(paymentModeCombo);
         gbc.gridy = row++;
         panel.add(paymentModeCombo, gbc);
 
-        markPaidBtn = new JButton("✔ Mark as PAID");
-        markPaidBtn.setFont(bold);
+        markPaidBtn = FluentTheme.accentButton("✔  Mark as PAID");
+        markPaidBtn.setFont(FluentTheme.FONT_SEMIBOLD);
         markPaidBtn.addActionListener(e -> onMarkAsPaid());
         gbc.gridy = row++;
         panel.add(markPaidBtn, gbc);
 
-        // Spacer at bottom
+        // Spacer
         gbc.gridy = row;
         gbc.weighty = 1.0;
         panel.add(new JLabel(), gbc);
@@ -311,55 +345,32 @@ public class BillingPanel extends JPanel {
 
     /**
      * Adds a label-value row to the summary grid.
-     *
-     * @param panel  target panel
-     * @param gbc    shared constraints
-     * @param row    row index
-     * @param label  left-side label text
-     * @param value  right-side value component
-     * @param font   font override for the value label (may be null)
      */
     private void addSummaryRow(JPanel panel, GridBagConstraints gbc,
-                               int row, String label, JLabel value, Font font) {
+                                int row, String label, JLabel value) {
         gbc.gridwidth = 1;
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
-        gbc.insets = new Insets(3, 8, 3, 4);
-        panel.add(new JLabel(label), gbc);
+        gbc.insets = new Insets(4, 16, 4, 4);
+        JLabel capLbl = new JLabel(label);
+        capLbl.setFont(FluentTheme.FONT_BODY);
+        capLbl.setForeground(FluentTheme.TEXT_MUTED);
+        panel.add(capLbl, gbc);
 
-        if (font != null) value.setFont(font);
         gbc.gridx = 1; gbc.weightx = 1.0;
-        gbc.insets = new Insets(3, 4, 3, 8);
+        gbc.insets = new Insets(4, 4, 4, 16);
         panel.add(value, gbc);
-    }
-
-    /**
-     * Adds a full-width horizontal separator row.
-     *
-     * @param panel target panel
-     * @param gbc   shared constraints
-     * @param row   row index
-     */
-    private void addSeparator(JPanel panel, GridBagConstraints gbc, int row) {
-        gbc.gridx = 0; gbc.gridy = row;
-        gbc.gridwidth = 2; gbc.weightx = 1.0;
-        gbc.insets = new Insets(2, 4, 2, 4);
-        panel.add(new JSeparator(), gbc);
     }
 
     /** Builds the status bar panel. */
     private JPanel buildStatusBar() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         statusLabel = new JLabel(" ");
-        statusLabel.setFont(statusLabel.getFont().deriveFont(Font.PLAIN, 11f));
-        panel.add(statusLabel);
-        return panel;
+        return FluentTheme.statusBar(statusLabel);
     }
 
     // ── Event Handlers ────────────────────────────────────────────────────────
 
     /**
-     * Handles "Load / Find Invoice". Tries to find an existing invoice
-     * for the entered job card ID. If none found, enables "Generate" button.
+     * Handles "Load / Find Invoice".
      */
     private void onLoadInvoice() {
         String input = jobCardIdField.getText().trim();
@@ -390,7 +401,7 @@ public class BillingPanel extends JPanel {
                     String[] vehicleCustomer = resolveVehicleAndCustomer(jobCardId);
                     return new Object[]{ inv.get(), items, vehicleCustomer };
                 }
-                return null;  // no existing invoice
+                return null;
             }
 
             @Override
@@ -403,10 +414,10 @@ public class BillingPanel extends JPanel {
                         generateBtn.setEnabled(true);
                         currentInvoice = null;
                     } else {
-                        currentInvoice  = (Invoice)       result[0];
+                        currentInvoice = (Invoice) result[0];
                         @SuppressWarnings("unchecked")
                         List<InvoiceItem> items = (List<InvoiceItem>) result[1];
-                        String[] vc     = (String[])      result[2];
+                        String[] vc = (String[]) result[2];
                         populateDisplay(currentInvoice, items, vc[0], vc[1]);
                         updateButtonStates(true);
                         setStatus("Invoice #" + currentInvoice.getInvoiceId() +
@@ -421,7 +432,7 @@ public class BillingPanel extends JPanel {
     }
 
     /**
-     * Handles "Generate New Invoice". Creates a new invoice for the job card ID.
+     * Handles "Generate New Invoice".
      */
     private void onGenerateInvoice() {
         String input = jobCardIdField.getText().trim();
@@ -450,14 +461,13 @@ public class BillingPanel extends JPanel {
             protected void done() {
                 try {
                     Object[] result = get();
-                    currentInvoice  = (Invoice)       result[0];
+                    currentInvoice = (Invoice) result[0];
                     @SuppressWarnings("unchecked")
                     List<InvoiceItem> items = (List<InvoiceItem>) result[1];
-                    String[] vc     = (String[])      result[2];
+                    String[] vc = (String[]) result[2];
                     populateDisplay(currentInvoice, items, vc[0], vc[1]);
                     updateButtonStates(true);
-                    setStatus("Invoice #" + currentInvoice.getInvoiceId() +
-                              " generated successfully.");
+                    setStatus("Invoice #" + currentInvoice.getInvoiceId() + " generated successfully.");
                 } catch (Exception ex) {
                     showError("Invoice generation failed.\n" + extractMessage(ex));
                     generateBtn.setEnabled(true);
@@ -468,8 +478,7 @@ public class BillingPanel extends JPanel {
     }
 
     /**
-     * Handles "Add Spare Part". Prompts for description, qty, unit price
-     * and adds a PART line item to the current invoice.
+     * Handles "Add Spare Part".
      */
     private void onAddPart() {
         if (currentInvoice == null) return;
@@ -477,21 +486,25 @@ public class BillingPanel extends JPanel {
         JTextField descField  = new JTextField(20);
         JTextField qtyField   = new JTextField("1", 5);
         JTextField priceField = new JTextField(8);
+        FluentTheme.styleTextField(descField);
+        FluentTheme.styleTextField(qtyField);
+        FluentTheme.styleTextField(priceField);
 
         JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(FluentTheme.SURFACE);
         GridBagConstraints g = new GridBagConstraints();
         g.insets = new Insets(4, 4, 4, 4);
         g.anchor = GridBagConstraints.WEST;
 
-        g.gridx = 0; g.gridy = 0; form.add(new JLabel("Description *:"), g);
+        g.gridx = 0; g.gridy = 0; form.add(makeCaption("Description *:"), g);
         g.gridx = 1; g.fill = GridBagConstraints.HORIZONTAL; g.weightx = 1;
         form.add(descField, g);
 
         g.fill = GridBagConstraints.NONE; g.weightx = 0;
-        g.gridx = 0; g.gridy = 1; form.add(new JLabel("Quantity *:"), g);
+        g.gridx = 0; g.gridy = 1; form.add(makeCaption("Quantity *:"), g);
         g.gridx = 1; form.add(qtyField, g);
 
-        g.gridx = 0; g.gridy = 2; form.add(new JLabel("Unit Price (₹) *:"), g);
+        g.gridx = 0; g.gridy = 2; form.add(makeCaption("Unit Price (₹) *:"), g);
         g.gridx = 1; form.add(priceField, g);
 
         int choice = JOptionPane.showConfirmDialog(
@@ -500,7 +513,7 @@ public class BillingPanel extends JPanel {
 
         if (choice != JOptionPane.OK_OPTION) return;
 
-        String desc  = descField.getText().trim();
+        String desc     = descField.getText().trim();
         String qtyStr   = qtyField.getText().trim();
         String priceStr = priceField.getText().trim();
 
@@ -518,7 +531,7 @@ public class BillingPanel extends JPanel {
             return;
         }
 
-        final int invoiceId  = currentInvoice.getInvoiceId();
+        final int invoiceId   = currentInvoice.getInvoiceId();
         final String finalDesc = desc;
 
         setStatus("Adding part: " + desc + "...");
@@ -534,7 +547,6 @@ public class BillingPanel extends JPanel {
             protected void done() {
                 try {
                     get();
-                    // Reload invoice + items to reflect new totals
                     reloadCurrentInvoice();
                 } catch (Exception ex) {
                     showError("Failed to add part.\n" + extractMessage(ex));
@@ -545,7 +557,7 @@ public class BillingPanel extends JPanel {
     }
 
     /**
-     * Handles "Mark as PAID". Confirms and persists payment with the selected mode.
+     * Handles "Mark as PAID".
      */
     private void onMarkAsPaid() {
         if (currentInvoice == null) return;
@@ -594,8 +606,7 @@ public class BillingPanel extends JPanel {
     // ── Data Loading ──────────────────────────────────────────────────────────
 
     /**
-     * Reloads the current invoice (after a part is added or payment is made).
-     * Uses the stored invoiceId to re-fetch from DB.
+     * Reloads the current invoice after a modification.
      */
     private void reloadCurrentInvoice() {
         if (currentInvoice == null) return;
@@ -648,21 +659,22 @@ public class BillingPanel extends JPanel {
         vehicleLabel.setText(vehicleInfo);
         customerLabel.setText(customerInfo);
 
-        // Payment status badge with colour coding
+        // Fluent-styled payment badge
         String status = inv.getPaymentStatus();
         paymentStatusBadge.setText("  " + status + "  ");
-        paymentStatusBadge.setBackground("PAID".equals(status)
-            ? new Color(198, 239, 206)   // green
-            : "WAIVED".equals(status)
-              ? new Color(255, 235, 156)  // yellow
-              : new Color(255, 199, 206)  // red for PENDING
-        );
-        paymentStatusBadge.setForeground("PAID".equals(status)
-            ? new Color(0, 97, 0)
-            : "WAIVED".equals(status)
-              ? new Color(127, 100, 0)
-              : new Color(156, 0, 6)
-        );
+        paymentStatusBadge.setOpaque(true);
+
+        if ("PAID".equals(status)) {
+            paymentStatusBadge.setBackground(new Color(0x1A3A1A));
+            paymentStatusBadge.setForeground(FluentTheme.STATUS_SUCCESS);
+        } else if ("WAIVED".equals(status)) {
+            paymentStatusBadge.setBackground(new Color(0x3A3010));
+            paymentStatusBadge.setForeground(FluentTheme.STATUS_WARNING);
+        } else {
+            // PENDING
+            paymentStatusBadge.setBackground(new Color(0x3A1A1A));
+            paymentStatusBadge.setForeground(FluentTheme.STATUS_ERROR);
+        }
 
         itemTableModel.setData(items);
 
@@ -671,7 +683,6 @@ public class BillingPanel extends JPanel {
         taxAmountLabel.setText("₹ "   + fmt(inv.getTaxAmount()));
         grandTotalLabel.setText("₹ "  + fmt(inv.getGrandTotal()));
 
-        // Disable mark-paid if already settled
         markPaidBtn.setEnabled(!"PAID".equals(status) && !"WAIVED".equals(status));
         generateBtn.setEnabled(false);
     }
@@ -683,7 +694,8 @@ public class BillingPanel extends JPanel {
         vehicleLabel.setText("—");
         customerLabel.setText("—");
         paymentStatusBadge.setText("—");
-        paymentStatusBadge.setBackground(null);
+        paymentStatusBadge.setBackground(FluentTheme.SURFACE);
+        paymentStatusBadge.setForeground(FluentTheme.TEXT_MUTED);
         paymentStatusBadge.setOpaque(false);
         itemTableModel.setData(new ArrayList<>());
         labourTotalLabel.setText("₹ —");
@@ -715,11 +727,8 @@ public class BillingPanel extends JPanel {
      */
     private String[] resolveVehicleAndCustomer(int jobCardId) throws SQLException {
         Connection conn = DBConnection.getConnection();
-
-        // We need to find the vehicle via JOB_CARDS → VEHICLE_ID
-        // Use JobCardDAO indirectly via the Connection
-        String vehicleInfo   = "—";
-        String customerInfo  = "—";
+        String vehicleInfo  = "—";
+        String customerInfo = "—";
 
         try {
             com.garage.dao.JobCardDAO jcDao = new com.garage.dao.JobCardDAO();
@@ -753,9 +762,7 @@ public class BillingPanel extends JPanel {
      * @param amount the amount to format
      * @return formatted string (e.g., "1,200.00")
      */
-    private String fmt(double amount) {
-        return CURRENCY_FMT.format(amount);
-    }
+    private String fmt(double amount) { return CURRENCY_FMT.format(amount); }
 
     /** Updates the status bar. */
     private void setStatus(String msg) { statusLabel.setText(" " + msg); }
@@ -775,6 +782,22 @@ public class BillingPanel extends JPanel {
     private String extractMessage(Exception ex) {
         Throwable cause = ex.getCause();
         return (cause != null) ? cause.getMessage() : ex.getMessage();
+    }
+
+    /** Creates a styled value JLabel (primary color). */
+    private JLabel makeValueLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(FluentTheme.FONT_BODY);
+        lbl.setForeground(FluentTheme.TEXT_PRIMARY);
+        return lbl;
+    }
+
+    /** Creates a styled caption JLabel (muted color). */
+    private JLabel makeCaption(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(FluentTheme.FONT_BODY);
+        lbl.setForeground(FluentTheme.TEXT_MUTED);
+        return lbl;
     }
 
     // ── Inner: Invoice Items Table Model ──────────────────────────────────────
@@ -807,9 +830,11 @@ public class BillingPanel extends JPanel {
 
         @Override
         public Class<?> getColumnClass(int col) {
+            // Cols 4 (Unit Price) and 5 (Line Total) are pre-formatted strings
+            // like "₹ 150.00" — must be String.class to avoid DoubleRenderer crash.
             return switch (col) {
                 case 0     -> Integer.class;
-                case 3, 4, 5 -> Double.class;
+                case 3     -> Double.class;
                 default    -> String.class;
             };
         }

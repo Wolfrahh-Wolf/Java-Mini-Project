@@ -14,7 +14,8 @@ import com.garage.service.HistoryService.ServiceHistoryRecord;
 import com.garage.service.HistoryService.VehicleSummary;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
@@ -30,7 +31,7 @@ import java.util.Locale;
  * <ul>
  *   <li>Search field + button</li>
  *   <li>Vehicle summary header (Make, Model, Year, Owner, Phone)</li>
- *   <li>History JTable with colour-coded Status column</li>
+ *   <li>History JTable with Fluent colour-coded Status column</li>
  *   <li>Export to text dialog</li>
  * </ul>
  *
@@ -75,144 +76,179 @@ public class ServiceHistoryPanel extends JPanel {
      * Constructs the ServiceHistoryPanel and builds all UI sections.
      */
     public ServiceHistoryPanel() {
-        setLayout(new BorderLayout(0, 6));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setLayout(new BorderLayout(0, 0));
+        setBackground(FluentTheme.CANVAS);
 
-        add(buildSearchSection(),  BorderLayout.NORTH);
-        add(buildHistoryTable(),   BorderLayout.CENTER);
-        add(buildStatusBar(),      BorderLayout.SOUTH);
+        add(buildTopSection(),   BorderLayout.NORTH);
+        add(buildHistoryTable(), BorderLayout.CENTER);
+        add(buildStatusBar(),    BorderLayout.SOUTH);
     }
 
     // ── UI Builders ───────────────────────────────────────────────────────────
 
     /**
-     * Builds the search input section (registration field + summary header).
+     * Builds the top section: search card + vehicle summary card stacked vertically.
      *
-     * @return the search + summary panel
+     * @return the assembled top panel
      */
-    private JPanel buildSearchSection() {
-        JPanel outer = new JPanel(new BorderLayout(0, 4));
-
-        // ── Row 1: search bar ──────────────────────────────────────────────
-        JPanel searchRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        searchRow.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(),
-            "Search Vehicle Service History",
-            TitledBorder.LEFT, TitledBorder.TOP));
-
-        searchRow.add(new JLabel("Registration No:"));
-        regNoField = new JTextField(14);
-        regNoField.setToolTipText("Enter the vehicle number plate (e.g., TN09AB1234)");
-        searchRow.add(regNoField);
-
-        JButton searchBtn = new JButton("Search History");
-        searchBtn.setMnemonic('S');
-        searchBtn.addActionListener(e -> onSearch());
-        searchRow.add(searchBtn);
-
-        JButton exportBtn = new JButton("Export to Text");
-        exportBtn.setMnemonic('E');
-        exportBtn.addActionListener(e -> onExport());
-        searchRow.add(exportBtn);
-
-        JButton clearBtn = new JButton("Clear");
-        clearBtn.setMnemonic('C');
-        clearBtn.addActionListener(e -> clearDisplay());
-        searchRow.add(clearBtn);
-
-        outer.add(searchRow, BorderLayout.NORTH);
-
-        // Allow pressing Enter in the search field
-        regNoField.addActionListener(e -> onSearch());
-
-        // ── Row 2: vehicle summary header ──────────────────────────────────
-        JPanel summaryPanel = new JPanel(new GridBagLayout());
-        summaryPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(),
-            "Vehicle & Owner Details",
-            TitledBorder.LEFT, TitledBorder.TOP));
-
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(3, 8, 3, 8);
-        gbc.anchor = GridBagConstraints.WEST;
-
-        Font bold = summaryPanel.getFont().deriveFont(Font.BOLD);
-
-        vehicleDetailLabel = new JLabel("—");
-        vehicleDetailLabel.setFont(bold);
-        ownerDetailLabel   = new JLabel("—");
-        ownerDetailLabel.setFont(bold);
-        totalServicesLabel = new JLabel("—");
-        totalServicesLabel.setFont(bold);
-        totalServicesLabel.setForeground(new Color(0, 90, 160));
-
-        Object[][] rows = {
-            {"Vehicle:",        vehicleDetailLabel},
-            {"Owner:",          ownerDetailLabel},
-            {"Total Visits:",   totalServicesLabel}
-        };
-        for (int i = 0; i < rows.length; i++) {
-            gbc.gridx = 0; gbc.gridy = i; gbc.weightx = 0;
-            summaryPanel.add(new JLabel((String) rows[i][0]), gbc);
-            gbc.gridx = 1; gbc.weightx = 1.0;
-            summaryPanel.add((JComponent) rows[i][1], gbc);
-        }
-
-        outer.add(summaryPanel, BorderLayout.CENTER);
-        return outer;
+    private JPanel buildTopSection() {
+        JPanel wrapper = new JPanel(new BorderLayout(0, 0));
+        wrapper.setBackground(FluentTheme.CANVAS);
+        wrapper.add(buildSearchCard(),  BorderLayout.NORTH);
+        wrapper.add(buildSummaryCard(), BorderLayout.CENTER);
+        return wrapper;
     }
 
     /**
-     * Builds the history table section.
+     * Builds the search input card.
      *
-     * @return the table panel
+     * @return the search card
+     */
+    private JPanel buildSearchCard() {
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.SURFACE);
+        card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
+
+        card.add(FluentTheme.sectionHeader("Search Vehicle Service History"),
+                 BorderLayout.NORTH);
+
+        JPanel inner = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+        inner.setBackground(FluentTheme.SURFACE);
+        inner.setBorder(new EmptyBorder(0, FluentTheme.PADDING, 4, FluentTheme.PADDING));
+
+        JLabel regLbl = new JLabel("Registration No:");
+        regLbl.setFont(FluentTheme.FONT_BODY);
+        regLbl.setForeground(FluentTheme.TEXT_MUTED);
+        inner.add(regLbl);
+
+        regNoField = new JTextField(16);
+        FluentTheme.styleTextField(regNoField);
+        regNoField.setToolTipText("Enter the vehicle number plate (e.g., TN09AB1234)");
+        regNoField.addActionListener(e -> onSearch());
+        inner.add(regNoField);
+
+        JButton searchBtn = FluentTheme.accentButton("Search History");
+        searchBtn.setMnemonic('S');
+        searchBtn.addActionListener(e -> onSearch());
+        inner.add(searchBtn);
+
+        JButton exportBtn = FluentTheme.secondaryButton("Export to Text");
+        exportBtn.setMnemonic('E');
+        exportBtn.addActionListener(e -> onExport());
+        inner.add(exportBtn);
+
+        JButton clearBtn = FluentTheme.ghostButton("Clear");
+        clearBtn.setMnemonic('C');
+        clearBtn.addActionListener(e -> clearDisplay());
+        inner.add(clearBtn);
+
+        card.add(inner, BorderLayout.CENTER);
+        return card;
+    }
+
+    /**
+     * Builds the vehicle and owner summary card.
+     *
+     * @return the summary card
+     */
+    private JPanel buildSummaryCard() {
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.SURFACE_ALT);
+        card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
+
+        card.add(FluentTheme.sectionHeader("Vehicle & Owner Details"), BorderLayout.NORTH);
+
+        JPanel grid = new JPanel(new GridBagLayout());
+        grid.setBackground(FluentTheme.SURFACE_ALT);
+        grid.setBorder(new EmptyBorder(FluentTheme.PADDING_SM, FluentTheme.PADDING,
+                                       FluentTheme.PADDING_SM, FluentTheme.PADDING));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(4, 8, 4, 16);
+        gbc.anchor = GridBagConstraints.WEST;
+
+        vehicleDetailLabel = makeValueLabel("—");
+        vehicleDetailLabel.setFont(FluentTheme.FONT_SEMIBOLD);
+        ownerDetailLabel   = makeValueLabel("—");
+        totalServicesLabel = makeValueLabel("—");
+        totalServicesLabel.setForeground(FluentTheme.ACCENT);
+        totalServicesLabel.setFont(FluentTheme.FONT_SEMIBOLD);
+
+        Object[][] rows = {
+            {"Vehicle:",       vehicleDetailLabel},
+            {"Owner:",         ownerDetailLabel},
+            {"Total Visits:",  totalServicesLabel}
+        };
+
+        for (int i = 0; i < rows.length; i++) {
+            gbc.gridx = 0; gbc.gridy = i; gbc.weightx = 0;
+            JLabel capLbl = new JLabel((String) rows[i][0]);
+            capLbl.setFont(FluentTheme.FONT_BODY);
+            capLbl.setForeground(FluentTheme.TEXT_MUTED);
+            grid.add(capLbl, gbc);
+            gbc.gridx = 1; gbc.weightx = 1.0;
+            grid.add((JComponent) rows[i][1], gbc);
+        }
+
+        card.add(grid, BorderLayout.CENTER);
+        return card;
+    }
+
+    /**
+     * Builds the history table card.
+     *
+     * @return the history table panel
      */
     private JPanel buildHistoryTable() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(),
-            "Service History",
-            TitledBorder.LEFT, TitledBorder.TOP));
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.CANVAS);
+        card.add(FluentTheme.sectionHeader("Service History"), BorderLayout.NORTH);
 
         tableModel = new HistoryTableModel();
         JTable table = new JTable(tableModel);
-        table.setRowHeight(24);
-        table.setFillsViewportHeight(true);
-        table.getTableHeader().setReorderingAllowed(false);
+        FluentTheme.styleTable(table);
         table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         // Colour-code the Status column (index 2)
         table.getColumnModel().getColumn(2).setCellRenderer(new StatusCellRenderer());
 
-        // Right-align the Invoice Total column (index 6)
+        // Padded renderer for other columns
+        DefaultTableCellRenderer paddedRenderer = new DefaultTableCellRenderer();
+        paddedRenderer.setBorder(new EmptyBorder(0, 12, 0, 12));
+        for (int i = 0; i < tableModel.getColumnCount(); i++) {
+            if (i != 2) table.getColumnModel().getColumn(i).setCellRenderer(paddedRenderer);
+        }
+
+        // Right-align Invoice Total column (index 6)
         DefaultTableCellRenderer rightAlign = new DefaultTableCellRenderer();
         rightAlign.setHorizontalAlignment(SwingConstants.RIGHT);
+        rightAlign.setBorder(new EmptyBorder(0, 4, 0, 12));
         table.getColumnModel().getColumn(6).setCellRenderer(rightAlign);
 
-        // Column preferred widths
-        int[] widths = {55, 130, 100, 150, 110, 70, 100, 80};
+        int[] widths = {55, 140, 110, 160, 120, 80, 110, 90};
         for (int i = 0; i < widths.length; i++) {
             table.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
         }
 
-        panel.add(new JScrollPane(table), BorderLayout.CENTER);
-        return panel;
+        JScrollPane scroll = new JScrollPane(table);
+        scroll.setBackground(FluentTheme.SURFACE);
+        scroll.getViewport().setBackground(FluentTheme.SURFACE);
+        scroll.setBorder(BorderFactory.createLineBorder(FluentTheme.BORDER, 1));
+
+        card.add(scroll, BorderLayout.CENTER);
+        return card;
     }
 
     /** Builds the bottom status bar. */
     private JPanel buildStatusBar() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         statusLabel = new JLabel("  Enter a registration number and click \"Search History\".");
-        statusLabel.setFont(statusLabel.getFont().deriveFont(Font.PLAIN, 11f));
-        panel.add(statusLabel);
-        return panel;
+        return FluentTheme.statusBar(statusLabel);
     }
 
     // ── Event Handlers ────────────────────────────────────────────────────────
 
     /**
      * Handles the Search button / Enter key.
-     * Fetches history and vehicle summary in a SwingWorker.
      */
     private void onSearch() {
         String regNo = regNoField.getText().trim();
@@ -230,8 +266,7 @@ public class ServiceHistoryPanel extends JPanel {
             @Override
             protected Object[] doInBackground() throws Exception {
                 VehicleSummary summary = historyService.getVehicleSummary(regNo);
-                List<ServiceHistoryRecord> records =
-                    historyService.getServiceHistory(regNo);
+                List<ServiceHistoryRecord> records = historyService.getServiceHistory(regNo);
                 return new Object[]{ summary, records };
             }
 
@@ -248,25 +283,22 @@ public class ServiceHistoryPanel extends JPanel {
 
                     if (summary == null && records.isEmpty()) {
                         clearSummaryLabels();
-                        vehicleDetailLabel.setText(
-                            "✘  No vehicle found for: " + regNo);
-                        vehicleDetailLabel.setForeground(Color.RED);
+                        vehicleDetailLabel.setText("✘  No vehicle found for: " + regNo);
+                        vehicleDetailLabel.setForeground(FluentTheme.STATUS_ERROR);
                         setStatus("No records found for '" + regNo + "'.");
                         return;
                     }
 
-                    // Populate summary header
                     if (summary != null) {
                         vehicleDetailLabel.setText(
                             summary.make + " " + summary.model +
                             "  (" + summary.yearOfMfr + ")  —  " + summary.fuelType);
-                        vehicleDetailLabel.setForeground(new Color(0, 100, 0));
+                        vehicleDetailLabel.setForeground(FluentTheme.STATUS_SUCCESS);
                         ownerDetailLabel.setText(
                             summary.customerName + "  (Ph: " + summary.phone + ")");
-                        ownerDetailLabel.setForeground(new Color(0, 80, 150));
+                        ownerDetailLabel.setForeground(FluentTheme.STATUS_INFO);
                     }
                     totalServicesLabel.setText(records.size() + " service visit(s) on record");
-
                     tableModel.setData(records);
                     setStatus(records.size() + " record(s) found for '" + regNo + "'.");
 
@@ -315,6 +347,8 @@ public class ServiceHistoryPanel extends JPanel {
         JTextArea textArea = new JTextArea(sb.toString(), 20, 60);
         textArea.setEditable(false);
         textArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        textArea.setBackground(FluentTheme.SURFACE);
+        textArea.setForeground(FluentTheme.TEXT_PRIMARY);
 
         JOptionPane.showMessageDialog(
             this,
@@ -336,13 +370,14 @@ public class ServiceHistoryPanel extends JPanel {
         regNoField.requestFocus();
     }
 
-    /** Resets the summary label values to their placeholder state. */
+    /** Resets the summary label values to placeholder state. */
     private void clearSummaryLabels() {
         vehicleDetailLabel.setText("—");
-        vehicleDetailLabel.setForeground(Color.DARK_GRAY);
+        vehicleDetailLabel.setForeground(FluentTheme.TEXT_MUTED);
         ownerDetailLabel.setText("—");
-        ownerDetailLabel.setForeground(Color.DARK_GRAY);
+        ownerDetailLabel.setForeground(FluentTheme.TEXT_MUTED);
         totalServicesLabel.setText("—");
+        totalServicesLabel.setForeground(FluentTheme.TEXT_MUTED);
     }
 
     /** Updates the status bar. */
@@ -363,6 +398,14 @@ public class ServiceHistoryPanel extends JPanel {
     private String extractMessage(Exception ex) {
         Throwable cause = ex.getCause();
         return (cause != null) ? cause.getMessage() : ex.getMessage();
+    }
+
+    /** Creates a styled primary-color value JLabel. */
+    private JLabel makeValueLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(FluentTheme.FONT_BODY);
+        lbl.setForeground(FluentTheme.TEXT_PRIMARY);
+        return lbl;
     }
 
     // ── Inner: History Table Model ────────────────────────────────────────────
@@ -405,13 +448,11 @@ public class ServiceHistoryPanel extends JPanel {
             ServiceHistoryRecord r = data.get(row);
             return switch (col) {
                 case 0 -> r.jobCardId;
-                case 1 -> r.appointmentDt != null
-                    ? r.appointmentDt.format(DT_FMT) : "—";
+                case 1 -> r.appointmentDt != null ? r.appointmentDt.format(DT_FMT) : "—";
                 case 2 -> r.status;
                 case 3 -> r.serviceName;
                 case 4 -> r.technicianName != null ? r.technicianName : "—";
-                case 5 -> r.labourHours > 0
-                    ? String.format("%.2f", r.labourHours) : "—";
+                case 5 -> r.labourHours > 0 ? String.format("%.2f", r.labourHours) : "—";
                 case 6 -> r.grandTotal != null
                     ? "₹ " + CURRENCY_FMT.format(r.grandTotal) : "Not invoiced";
                 case 7 -> r.paymentStatus != null ? r.paymentStatus : "—";
@@ -423,13 +464,13 @@ public class ServiceHistoryPanel extends JPanel {
     // ── Inner: Status Colour Renderer ─────────────────────────────────────────
 
     /**
-     * Colour-codes the Status column in the history table.
+     * Fluent-styled colour-coded renderer for the Status column.
      *
      * <ul>
-     *   <li>BOOKED      → blue</li>
-     *   <li>IN_PROGRESS → orange</li>
-     *   <li>COMPLETED   → purple</li>
-     *   <li>DELIVERED   → dark green</li>
+     *   <li>BOOKED      → Fluent Blue</li>
+     *   <li>IN_PROGRESS → Fluent Amber</li>
+     *   <li>COMPLETED   → Success Green</li>
+     *   <li>DELIVERED   → Dark Green</li>
      * </ul>
      */
     private static class StatusCellRenderer extends DefaultTableCellRenderer {
@@ -443,19 +484,22 @@ public class ServiceHistoryPanel extends JPanel {
                 table, value, isSelected, hasFocus, row, column);
 
             setHorizontalAlignment(SwingConstants.CENTER);
-            setFont(getFont().deriveFont(Font.BOLD));
+            setFont(FluentTheme.FONT_SEMIBOLD);
+            setBorder(new EmptyBorder(0, 8, 0, 8));
 
             if (!isSelected) {
                 String status = (value != null) ? value.toString() : "";
                 setForeground(switch (status) {
-                    case "BOOKED"      -> new Color(0, 80, 180);
-                    case "IN_PROGRESS" -> new Color(200, 100, 0);
-                    case "COMPLETED"   -> new Color(100, 0, 160);
-                    case "DELIVERED"   -> new Color(0, 130, 0);
-                    default            -> table.getForeground();
+                    case "BOOKED"      -> FluentTheme.STATUS_INFO;
+                    case "IN_PROGRESS" -> FluentTheme.STATUS_WARNING;
+                    case "COMPLETED"   -> FluentTheme.STATUS_SUCCESS;
+                    case "DELIVERED"   -> new Color(0x2ECC71);
+                    default            -> FluentTheme.TEXT_MUTED;
                 });
+                setBackground(FluentTheme.SURFACE);
             } else {
                 setForeground(table.getSelectionForeground());
+                setBackground(FluentTheme.SELECTION_BG);
             }
             return this;
         }

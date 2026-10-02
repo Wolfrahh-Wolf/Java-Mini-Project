@@ -1,11 +1,14 @@
 /**
  * MainApp — Application entry point.
- * Sets the system Look and Feel, then bootstraps the Swing UI on the EDT.
+ * Installs FlatDarkLaf with Fluent UI 2 Dark token overrides, then bootstraps
+ * the Swing UI on the EDT.
  *
  * Course  : UIT3361 OOP Java / UIT3311 Database Technology Lab
  * Project : Vehicle Service Management System
  */
 package com.garage.ui;
+
+import com.formdev.flatlaf.FlatDarkLaf;
 
 import javax.swing.*;
 
@@ -14,8 +17,9 @@ import javax.swing.*;
  *
  * <p>Responsibilities:
  * <ol>
- *   <li>Install the system native Look and Feel before any component is created.</li>
- *   <li>Force DB connection initialisation via DBConnection (fails early on bad config).</li>
+ *   <li>Install FlatDarkLaf (Fluent UI 2 dark mode) before any component is created.</li>
+ *   <li>Apply {@link FluentTheme} global UIManager token overrides.</li>
+ *   <li>Force DB connection initialisation to fail-fast on bad config.</li>
  *   <li>Hand off to the Swing Event Dispatch Thread via {@link SwingUtilities#invokeLater}.</li>
  * </ol>
  */
@@ -28,13 +32,16 @@ public class MainApp {
      */
     public static void main(String[] args) {
 
-        // Step 1: Set system Look and Feel — must happen before any Swing component is created.
+        // Step 1: Install FlatDarkLaf — must happen before any Swing component is created.
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            FlatDarkLaf.setup();
+            FluentTheme.applyGlobalDefaults();
         } catch (Exception e) {
-            // Non-fatal: fall back to default cross-platform L&F
-            System.err.println("MainApp: Could not set system Look and Feel. " +
-                               "Falling back to default. Cause: " + e.getMessage());
+            System.err.println("MainApp: Could not install FlatDarkLaf. " +
+                               "Falling back to system L&F. Cause: " + e.getMessage());
+            try {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (Exception ignored) { /* last resort: default cross-platform */ }
         }
 
         // Step 2: Touch DBConnection here (on the main thread) so that any fatal

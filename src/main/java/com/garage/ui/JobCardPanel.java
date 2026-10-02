@@ -20,7 +20,8 @@ import com.garage.service.JobCardService;
 import com.garage.util.DBConnection;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
@@ -80,12 +81,12 @@ public class JobCardPanel extends JPanel {
      * Constructs the JobCardPanel, builds the UI, and loads all job cards.
      */
     public JobCardPanel() {
-        setLayout(new BorderLayout(0, 6));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setLayout(new BorderLayout(0, 0));
+        setBackground(FluentTheme.CANVAS);
 
-        add(buildFilterBar(),    BorderLayout.NORTH);
+        add(buildFilterBar(),     BorderLayout.NORTH);
         add(buildCentreSection(), BorderLayout.CENTER);
-        add(buildStatusBar(),    BorderLayout.SOUTH);
+        add(buildStatusBar(),     BorderLayout.SOUTH);
 
         loadJobCards();
     }
@@ -93,93 +94,144 @@ public class JobCardPanel extends JPanel {
     // ── UI Builders ───────────────────────────────────────────────────────────
 
     /**
-     * Builds the status filter radio-button bar and the Refresh/action buttons.
+     * Builds the Fluent-styled filter bar and action button row.
      *
      * @return the filter bar panel
      */
     private JPanel buildFilterBar() {
-        JPanel outer = new JPanel(new BorderLayout());
+        JPanel outer = new JPanel(new BorderLayout(0, 0));
+        outer.setBackground(FluentTheme.SURFACE);
+        outer.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
 
-        // ── Filter radio buttons ───────────────────────────────────────────
-        JPanel filterPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
-        filterPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Filter by Status",
-            TitledBorder.LEFT, TitledBorder.TOP));
+        // ── Filter radio buttons ───────────────────────────────────────────────
+        JPanel filterRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 10));
+        filterRow.setBackground(FluentTheme.SURFACE);
+        filterRow.setBorder(new EmptyBorder(0, FluentTheme.PADDING, 0, 0));
+
+        JLabel filterLbl = new JLabel("Filter:");
+        filterLbl.setFont(FluentTheme.FONT_SEMIBOLD);
+        filterLbl.setForeground(FluentTheme.TEXT_MUTED);
+        filterRow.add(filterLbl);
 
         ButtonGroup group = new ButtonGroup();
         String[] filters = {"ALL", "BOOKED", "IN_PROGRESS", "COMPLETED", "DELIVERED"};
 
         for (String f : filters) {
-            JRadioButton rb = new JRadioButton(f.replace("_", " "), "ALL".equals(f));
-            rb.setActionCommand(f);
-            rb.addActionListener(e -> {
-                currentFilter = "ALL".equals(e.getActionCommand()) ? null : e.getActionCommand();
+            JToggleButton tb = buildFilterToggle(f.replace("_", " "));
+            tb.setSelected("ALL".equals(f));
+            tb.addActionListener(e -> {
+                currentFilter = "ALL".equals(f) ? null : f;
                 loadJobCards();
             });
-            group.add(rb);
-            filterPanel.add(rb);
+            group.add(tb);
+            filterRow.add(tb);
         }
 
-        outer.add(filterPanel, BorderLayout.CENTER);
+        outer.add(filterRow, BorderLayout.WEST);
 
-        // ── Action buttons ────────────────────────────────────────────────
-        JPanel actionPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 4));
-        actionPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Actions",
-            TitledBorder.LEFT, TitledBorder.TOP));
+        // ── Action buttons ─────────────────────────────────────────────────────
+        JPanel actionRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 8));
+        actionRow.setBackground(FluentTheme.SURFACE);
+        actionRow.setBorder(new EmptyBorder(0, 0, 0, FluentTheme.PADDING));
 
-        JButton refreshBtn = new JButton("⟳ Refresh");
+        JButton refreshBtn = FluentTheme.secondaryButton("⟳  Refresh");
         refreshBtn.setMnemonic('R');
         refreshBtn.addActionListener(e -> loadJobCards());
-        actionPanel.add(refreshBtn);
+        actionRow.add(refreshBtn);
 
-        advanceBtn = new JButton("Advance Status ▶");
+        advanceBtn = FluentTheme.accentButton("Advance Status  ▶");
         advanceBtn.setEnabled(false);
         advanceBtn.setMnemonic('A');
         advanceBtn.addActionListener(e -> onAdvanceStatus());
-        actionPanel.add(advanceBtn);
+        actionRow.add(advanceBtn);
 
-        technicianBtn = new JButton("Assign Technician");
+        technicianBtn = FluentTheme.secondaryButton("Assign Technician");
         technicianBtn.setEnabled(false);
         technicianBtn.setMnemonic('T');
         technicianBtn.addActionListener(e -> onAssignTechnician());
-        actionPanel.add(technicianBtn);
+        actionRow.add(technicianBtn);
 
-        hoursBtn = new JButton("Record Hours");
+        hoursBtn = FluentTheme.secondaryButton("Record Hours");
         hoursBtn.setEnabled(false);
         hoursBtn.setMnemonic('H');
         hoursBtn.addActionListener(e -> onRecordHours());
-        actionPanel.add(hoursBtn);
+        actionRow.add(hoursBtn);
 
-        outer.add(actionPanel, BorderLayout.EAST);
+        outer.add(actionRow, BorderLayout.EAST);
         return outer;
     }
 
     /**
-     * Builds the centre section: job card table above, detail panel below.
+     * Creates a styled Fluent filter toggle button.
+     *
+     * @param label the button text
+     * @return the configured JToggleButton
+     */
+    private JToggleButton buildFilterToggle(String label) {
+        JToggleButton tb = new JToggleButton(label) {
+            @Override
+            protected void paintComponent(Graphics g) {
+                if (isSelected()) {
+                    g.setColor(FluentTheme.ACCENT_MUTED);
+                    g.fillRoundRect(0, 0, getWidth(), getHeight(), 6, 6);
+                }
+                super.paintComponent(g);
+            }
+        };
+        tb.setFont(FluentTheme.FONT_BODY);
+        tb.setForeground(FluentTheme.TEXT_MUTED);
+        tb.setBackground(FluentTheme.SURFACE);
+        tb.setFocusPainted(false);
+        tb.setBorderPainted(false);
+        tb.setContentAreaFilled(false);
+        tb.setOpaque(false);
+        tb.setBorder(new EmptyBorder(5, 12, 5, 12));
+        tb.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        tb.addChangeListener(e -> {
+            if (tb.isSelected()) {
+                tb.setForeground(FluentTheme.ACCENT);
+                tb.setFont(FluentTheme.FONT_SEMIBOLD);
+            } else {
+                tb.setForeground(FluentTheme.TEXT_MUTED);
+                tb.setFont(FluentTheme.FONT_BODY);
+            }
+        });
+        return tb;
+    }
+
+    /**
+     * Builds the centre section: job card table above, detail card below.
      *
      * @return a JSplitPane with table and detail areas
      */
     private JComponent buildCentreSection() {
-        // ── Table panel ────────────────────────────────────────────────────
+        // ── Table card ────────────────────────────────────────────────────────
+        JPanel tableCard = new JPanel(new BorderLayout(0, 0));
+        tableCard.setBackground(FluentTheme.CANVAS);
+        tableCard.add(FluentTheme.sectionHeader("Job Cards"), BorderLayout.NORTH);
+
         tableModel   = new JobCardTableModel();
         jobCardTable = new JTable(tableModel);
-        jobCardTable.setRowHeight(22);
-        jobCardTable.setFillsViewportHeight(true);
+        FluentTheme.styleTable(jobCardTable);
         jobCardTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        jobCardTable.getTableHeader().setReorderingAllowed(false);
 
-        // Custom renderer to colour-code the Status column
-        jobCardTable.getColumnModel().getColumn(6)
-            .setCellRenderer(new StatusColumnRenderer());
+        // Padded renderer for all columns
+        DefaultTableCellRenderer paddedRenderer = new DefaultTableCellRenderer();
+        paddedRenderer.setBorder(new EmptyBorder(0, 12, 0, 12));
+        for (int i = 0; i < tableModel.getColumnCount(); i++) {
+            if (i != 6) jobCardTable.getColumnModel().getColumn(i).setCellRenderer(paddedRenderer);
+        }
+
+        // Custom renderer for Status column (index 6) with Fluent colours + badge
+        jobCardTable.getColumnModel().getColumn(6).setCellRenderer(new StatusColumnRenderer());
 
         // Column widths
-        int[] widths = {55, 100, 140, 140, 120, 85, 100, 80};
+        int[] widths = {55, 110, 150, 160, 130, 95, 110, 120};
         for (int i = 0; i < widths.length; i++) {
             jobCardTable.getColumnModel().getColumn(i).setPreferredWidth(widths[i]);
         }
 
-        // Selection listener: enable/disable action buttons
+        // Selection listener
         jobCardTable.getSelectionModel().addListSelectionListener(
             (ListSelectionEvent e) -> {
                 if (!e.getValueIsAdjusting()) {
@@ -192,34 +244,49 @@ public class JobCardPanel extends JPanel {
             }
         );
 
-        JPanel tablePanel = new JPanel(new BorderLayout());
-        tablePanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Job Cards",
-            TitledBorder.LEFT, TitledBorder.TOP));
-        tablePanel.add(new JScrollPane(jobCardTable), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(jobCardTable);
+        scroll.setBackground(FluentTheme.SURFACE);
+        scroll.getViewport().setBackground(FluentTheme.SURFACE);
+        scroll.setBorder(BorderFactory.createLineBorder(FluentTheme.BORDER, 1));
+        tableCard.add(scroll, BorderLayout.CENTER);
 
-        // ── Detail panel ───────────────────────────────────────────────────
-        JPanel detailPanel = new JPanel(new BorderLayout(4, 4));
-        detailPanel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Selected Job Card — Details",
-            TitledBorder.LEFT, TitledBorder.TOP));
+        // ── Detail card ───────────────────────────────────────────────────────
+        JPanel detailCard = new JPanel(new BorderLayout(0, 0));
+        detailCard.setBackground(FluentTheme.SURFACE);
+        detailCard.add(FluentTheme.sectionHeader("Selected Job Card — Details"),
+                       BorderLayout.NORTH);
+
+        JPanel detailInner = new JPanel(new BorderLayout(4, 4));
+        detailInner.setBackground(FluentTheme.SURFACE);
+        detailInner.setBorder(new EmptyBorder(FluentTheme.PADDING_SM, FluentTheme.PADDING,
+                                               FluentTheme.PADDING_SM, FluentTheme.PADDING));
 
         detailLabel = new JLabel("  Select a row to view details.");
-        detailLabel.setFont(detailLabel.getFont().deriveFont(Font.ITALIC));
-        detailPanel.add(detailLabel, BorderLayout.NORTH);
+        detailLabel.setFont(FluentTheme.FONT_CAPTION);
+        detailLabel.setForeground(FluentTheme.TEXT_MUTED);
+        detailInner.add(detailLabel, BorderLayout.NORTH);
 
         remarksArea = new JTextArea(3, 40);
         remarksArea.setEditable(false);
         remarksArea.setLineWrap(true);
         remarksArea.setWrapStyleWord(true);
-        remarksArea.setBackground(new Color(250, 250, 248));
-        remarksArea.setBorder(BorderFactory.createEmptyBorder(4, 6, 4, 6));
-        detailPanel.add(new JScrollPane(remarksArea), BorderLayout.CENTER);
+        FluentTheme.styleTextArea(remarksArea);
+        remarksArea.setBackground(FluentTheme.INPUT_BG);
 
-        // Split: table takes ~70%, detail takes ~30%
-        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tablePanel, detailPanel);
+        JScrollPane remarksScroll = new JScrollPane(remarksArea);
+        remarksScroll.setBorder(BorderFactory.createLineBorder(FluentTheme.BORDER, 1));
+        remarksScroll.getViewport().setBackground(FluentTheme.INPUT_BG);
+        detailInner.add(remarksScroll, BorderLayout.CENTER);
+
+        detailCard.add(detailInner, BorderLayout.CENTER);
+
+        // Split: table ~72%, detail ~28%
+        JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tableCard, detailCard);
         split.setResizeWeight(0.72);
         split.setOneTouchExpandable(true);
+        split.setBackground(FluentTheme.CANVAS);
+        split.setBorder(null);
+        split.setDividerSize(6);
         return split;
     }
 
@@ -229,18 +296,14 @@ public class JobCardPanel extends JPanel {
      * @return the status bar panel
      */
     private JPanel buildStatusBar() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         statusLabel = new JLabel(" ");
-        statusLabel.setFont(statusLabel.getFont().deriveFont(Font.PLAIN, 11f));
-        panel.add(statusLabel);
-        return panel;
+        return FluentTheme.statusBar(statusLabel);
     }
 
     // ── Event Handlers ────────────────────────────────────────────────────────
 
     /**
-     * Handles "Advance Status" — advances the selected job card one step forward
-     * and refreshes the table.
+     * Handles "Advance Status" — advances the selected job card one step forward.
      */
     private void onAdvanceStatus() {
         JobCardDisplayRow row = getSelectedRow();
@@ -293,7 +356,7 @@ public class JobCardPanel extends JPanel {
             current
         );
 
-        if (name == null || name.trim().isEmpty()) return;  // user cancelled or blanked
+        if (name == null || name.trim().isEmpty()) return;
 
         setStatus("Assigning technician...");
 
@@ -333,7 +396,7 @@ public class JobCardPanel extends JPanel {
             row.labourHours > 0 ? String.valueOf(row.labourHours) : ""
         );
 
-        if (input == null || input.trim().isEmpty()) return;  // cancelled
+        if (input == null || input.trim().isEmpty()) return;
 
         double hours;
         try {
@@ -392,7 +455,6 @@ public class JobCardPanel extends JPanel {
                 List<JobCard> cards = (currentFilter == null)
                     ? jobCardService.getAllJobCards()
                     : jobCardService.getByStatus(currentFilter);
-
                 return enrichRows(cards);
             }
 
@@ -427,7 +489,6 @@ public class JobCardPanel extends JPanel {
         CustomerDAO customerDao = new CustomerDAO();
         ServiceDAO  serviceDao  = new ServiceDAO();
 
-        // Simple in-memory caches keyed by PK to avoid N+1 DB calls
         Map<Integer, Vehicle>  vehicleCache  = new ConcurrentHashMap<>();
         Map<Integer, Customer> customerCache = new ConcurrentHashMap<>();
         Map<Integer, Service>  serviceCache  = new ConcurrentHashMap<>();
@@ -435,36 +496,24 @@ public class JobCardPanel extends JPanel {
         List<JobCardDisplayRow> rows = new ArrayList<>();
 
         for (JobCard jc : cards) {
-            // Vehicle
             Vehicle v = vehicleCache.computeIfAbsent(jc.getVehicleId(), id -> {
-                try {
-                    return vehicleDao.findById(conn, id).orElse(null);
-                } catch (SQLException e) {
-                    return null;
-                }
+                try { return vehicleDao.findById(conn, id).orElse(null); }
+                catch (SQLException e) { return null; }
             });
             String regNo = (v != null) ? v.getRegistrationNo() : "ID:" + jc.getVehicleId();
 
-            // Customer
             String customerName = "—";
             if (v != null) {
                 Customer c = customerCache.computeIfAbsent(v.getCustomerId(), id -> {
-                    try {
-                        return customerDao.findById(conn, id).orElse(null);
-                    } catch (SQLException e) {
-                        return null;
-                    }
+                    try { return customerDao.findById(conn, id).orElse(null); }
+                    catch (SQLException e) { return null; }
                 });
                 if (c != null) customerName = c.getCustomerName();
             }
 
-            // Service
             Service s = serviceCache.computeIfAbsent(jc.getServiceId(), id -> {
-                try {
-                    return serviceDao.findById(conn, id).orElse(null);
-                } catch (SQLException e) {
-                    return null;
-                }
+                try { return serviceDao.findById(conn, id).orElse(null); }
+                catch (SQLException e) { return null; }
             });
             String serviceName = (s != null) ? s.getServiceName() : "ID:" + jc.getServiceId();
 
@@ -477,8 +526,7 @@ public class JobCardPanel extends JPanel {
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     /**
-     * Returns the {@link JobCardDisplayRow} for the currently selected table row,
-     * or null if nothing is selected.
+     * Returns the {@link JobCardDisplayRow} for the currently selected table row.
      *
      * @return the selected row or null
      */
@@ -495,8 +543,7 @@ public class JobCardPanel extends JPanel {
         JobCardDisplayRow row = getSelectedRow();
         if (row == null) return;
 
-        String apptStr = (row.appointmentDt != null)
-            ? row.appointmentDt.format(DT_FMT) : "—";
+        String apptStr  = (row.appointmentDt != null) ? row.appointmentDt.format(DT_FMT) : "—";
         String startStr = (row.startDt != null) ? row.startDt.format(DT_FMT) : "—";
         String doneStr  = (row.completionDt != null) ? row.completionDt.format(DT_FMT) : "—";
 
@@ -510,9 +557,7 @@ public class JobCardPanel extends JPanel {
     }
 
     /** Updates the status bar text. */
-    private void setStatus(String message) {
-        statusLabel.setText(" " + message);
-    }
+    private void setStatus(String message) { statusLabel.setText(" " + message); }
 
     /** Shows a validation/error dialog per AGENTS.md §4.5. */
     private void showError(String message) {
@@ -561,17 +606,17 @@ public class JobCardPanel extends JPanel {
          */
         JobCardDisplayRow(JobCard jc, String vehicleRegNo,
                           String customerName, String serviceName) {
-            this.jobCardId     = jc.getJobCardId();
-            this.vehicleRegNo  = vehicleRegNo;
-            this.customerName  = customerName;
-            this.serviceName   = serviceName;
+            this.jobCardId      = jc.getJobCardId();
+            this.vehicleRegNo   = vehicleRegNo;
+            this.customerName   = customerName;
+            this.serviceName    = serviceName;
             this.technicianName = jc.getTechnicianName();
-            this.status        = jc.getStatus();
-            this.appointmentDt = jc.getAppointmentDt();
-            this.startDt       = jc.getStartDt();
-            this.completionDt  = jc.getCompletionDt();
-            this.labourHours   = jc.getLabourHours();
-            this.remarks       = jc.getRemarks();
+            this.status         = jc.getStatus();
+            this.appointmentDt  = jc.getAppointmentDt();
+            this.startDt        = jc.getStartDt();
+            this.completionDt   = jc.getCompletionDt();
+            this.labourHours    = jc.getLabourHours();
+            this.remarks        = jc.getRemarks();
         }
     }
 
@@ -606,9 +651,7 @@ public class JobCardPanel extends JPanel {
          * @param rowIndex table row index
          * @return the {@link JobCardDisplayRow} at that position
          */
-        public JobCardDisplayRow getRowAt(int rowIndex) {
-            return data.get(rowIndex);
-        }
+        public JobCardDisplayRow getRowAt(int rowIndex) { return data.get(rowIndex); }
 
         @Override public int getRowCount()    { return data.size(); }
         @Override public int getColumnCount() { return COLUMNS.length; }
@@ -617,9 +660,12 @@ public class JobCardPanel extends JPanel {
 
         @Override
         public Class<?> getColumnClass(int col) {
+            // Column 5 (Labour Hrs) must be String.class because getValueAt()
+            // returns "—" (a String) when labourHours == 0.  Declaring it as
+            // Double.class would cause JTable$DoubleRenderer to call
+            // DecimalFormat.format("—") → IllegalArgumentException.
             return switch (col) {
                 case 0 -> Integer.class;
-                case 5 -> Double.class;
                 default -> String.class;
             };
         }
@@ -633,7 +679,8 @@ public class JobCardPanel extends JPanel {
                 case 2 -> r.customerName;
                 case 3 -> r.serviceName;
                 case 4 -> Objects.requireNonNullElse(r.technicianName, "—");
-                case 5 -> r.labourHours > 0 ? r.labourHours : "—";
+                case 5 -> r.labourHours > 0
+                    ? String.format("%.2f hrs", r.labourHours) : "—";
                 case 6 -> r.status;
                 case 7 -> (r.appointmentDt != null)
                     ? r.appointmentDt.format(DT_FMT) : "—";
@@ -642,16 +689,17 @@ public class JobCardPanel extends JPanel {
         }
     }
 
-    // ── Inner: Status Colour Renderer ─────────────────────────────────────────
+    // ── Inner: Status Column Renderer ─────────────────────────────────────────
 
     /**
-     * Custom cell renderer that colour-codes the Status column for quick visual scanning.
+     * Custom cell renderer that renders the Status column as a Fluent-styled
+     * colour-coded badge text.
      *
      * <ul>
-     *   <li>BOOKED      → blue</li>
-     *   <li>IN_PROGRESS → orange</li>
-     *   <li>COMPLETED   → dark green</li>
-     *   <li>DELIVERED   → gray</li>
+     *   <li>BOOKED      → Fluent Blue</li>
+     *   <li>IN_PROGRESS → Fluent Amber</li>
+     *   <li>COMPLETED   → Success Green</li>
+     *   <li>DELIVERED   → Neutral Grey</li>
      * </ul>
      */
     private static class StatusColumnRenderer extends DefaultTableCellRenderer {
@@ -665,19 +713,22 @@ public class JobCardPanel extends JPanel {
                 table, value, isSelected, hasFocus, row, column);
 
             setHorizontalAlignment(SwingConstants.CENTER);
-            setFont(getFont().deriveFont(Font.BOLD));
+            setFont(FluentTheme.FONT_SEMIBOLD);
+            setBorder(new EmptyBorder(0, 8, 0, 8));
 
             if (!isSelected) {
                 String status = (value != null) ? value.toString() : "";
                 setForeground(switch (status) {
-                    case "BOOKED"      -> new Color(0, 80, 180);
-                    case "IN_PROGRESS" -> new Color(200, 100, 0);
-                    case "COMPLETED"   -> new Color(0, 130, 0);
-                    case "DELIVERED"   -> Color.GRAY;
-                    default            -> table.getForeground();
+                    case "BOOKED"      -> FluentTheme.STATUS_INFO;
+                    case "IN_PROGRESS" -> FluentTheme.STATUS_WARNING;
+                    case "COMPLETED"   -> FluentTheme.STATUS_SUCCESS;
+                    case "DELIVERED"   -> FluentTheme.STATUS_NEUTRAL;
+                    default            -> FluentTheme.TEXT_MUTED;
                 });
+                setBackground(FluentTheme.SURFACE);
             } else {
                 setForeground(table.getSelectionForeground());
+                setBackground(FluentTheme.SELECTION_BG);
             }
             return this;
         }

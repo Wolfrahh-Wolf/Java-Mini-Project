@@ -12,8 +12,10 @@ import com.garage.model.Customer;
 import com.garage.service.CustomerService;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,10 +58,10 @@ public class CustomerPanel extends JPanel {
      * Constructs the CustomerPanel, builds the UI, and loads initial data.
      */
     public CustomerPanel() {
-        setLayout(new BorderLayout(0, 8));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setLayout(new BorderLayout(0, 0));
+        setBackground(FluentTheme.CANVAS);
 
-        add(buildFormSection(),   BorderLayout.NORTH);
+        add(buildTopSection(),    BorderLayout.NORTH);
         add(buildTableSection(),  BorderLayout.CENTER);
         add(buildStatusBar(),     BorderLayout.SOUTH);
 
@@ -69,123 +71,130 @@ public class CustomerPanel extends JPanel {
     // ── UI Builders ───────────────────────────────────────────────────────────
 
     /**
-     * Builds the top section containing the registration form and the search bar.
+     * Builds the top section: registration form card + search bar card.
      *
-     * @return a JPanel containing both subsections
+     * @return the assembled top panel
      */
-    private JPanel buildFormSection() {
-        JPanel wrapper = new JPanel(new BorderLayout(0, 6));
-        wrapper.add(buildRegistrationForm(), BorderLayout.CENTER);
-        wrapper.add(buildSearchBar(),        BorderLayout.SOUTH);
+    private JPanel buildTopSection() {
+        JPanel wrapper = new JPanel(new BorderLayout(0, 0));
+        wrapper.setBackground(FluentTheme.CANVAS);
+        wrapper.add(buildRegistrationCard(), BorderLayout.CENTER);
+        wrapper.add(buildSearchCard(),       BorderLayout.SOUTH);
         return wrapper;
     }
 
     /**
-     * Builds the customer registration form using GridBagLayout.
+     * Builds the customer registration form inside a Fluent card.
      *
      * @return the registration form panel
      */
-    private JPanel buildRegistrationForm() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Register New Customer",
-            TitledBorder.LEFT, TitledBorder.TOP));
+    private JPanel buildRegistrationCard() {
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.SURFACE);
+        card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
+
+        card.add(FluentTheme.sectionHeader("Register New Customer"), BorderLayout.NORTH);
+
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(FluentTheme.SURFACE);
+        form.setBorder(new EmptyBorder(FluentTheme.PADDING, FluentTheme.PADDING,
+                                       FluentTheme.PADDING, FluentTheme.PADDING));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets  = new Insets(4, 6, 4, 6);
+        gbc.insets  = new Insets(6, 8, 6, 8);
         gbc.anchor  = GridBagConstraints.WEST;
         gbc.fill    = GridBagConstraints.HORIZONTAL;
 
-        // ── Row 0: Name ───────────────────────────────────────────────────
+        // ── Row 0: Name / Phone ───────────────────────────────────────────────
         gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
-        panel.add(new JLabel("Full Name *:"), gbc);
+        form.add(makeLabel("Full Name *"), gbc);
 
-        nameField = new JTextField(20);
-        nameField.setToolTipText("Enter the customer's full name");
+        nameField = makeTextField("Customer's full name");
         gbc.gridx = 1; gbc.weightx = 1.0;
-        panel.add(nameField, gbc);
+        form.add(nameField, gbc);
 
-        // ── Row 0: Phone (col 2-3) ────────────────────────────────────────
         gbc.gridx = 2; gbc.weightx = 0;
-        panel.add(new JLabel("Phone *:"), gbc);
+        form.add(makeLabel("Phone *"), gbc);
 
-        phoneField = new JTextField(12);
-        phoneField.setToolTipText("Enter a 10-15 digit mobile number");
-        gbc.gridx = 3; gbc.weightx = 0.5;
-        panel.add(phoneField, gbc);
+        phoneField = makeTextField("10-15 digit mobile number");
+        gbc.gridx = 3; gbc.weightx = 0.6;
+        form.add(phoneField, gbc);
 
-        // ── Row 1: Email ──────────────────────────────────────────────────
+        // ── Row 1: Email / Address ────────────────────────────────────────────
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
-        panel.add(new JLabel("Email:"), gbc);
+        form.add(makeLabel("Email"), gbc);
 
-        emailField = new JTextField(20);
-        emailField.setToolTipText("Optional — email address");
+        emailField = makeTextField("Optional — email address");
         gbc.gridx = 1; gbc.weightx = 1.0;
-        panel.add(emailField, gbc);
+        form.add(emailField, gbc);
 
-        // ── Row 1: Address (spans 2 cols) ─────────────────────────────────
         gbc.gridx = 2; gbc.weightx = 0;
-        panel.add(new JLabel("Address:"), gbc);
+        form.add(makeLabel("Address"), gbc);
 
-        addressField = new JTextField(24);
-        addressField.setToolTipText("Optional — street / city address");
-        gbc.gridx = 3; gbc.weightx = 0.5;
-        panel.add(addressField, gbc);
+        addressField = makeTextField("Optional — street / city");
+        gbc.gridx = 3; gbc.weightx = 0.6;
+        form.add(addressField, gbc);
 
-        // ── Row 2: Button row ─────────────────────────────────────────────
+        // ── Row 2: Buttons ────────────────────────────────────────────────────
         gbc.gridx = 0; gbc.gridy = 2;
         gbc.gridwidth = 4;
         gbc.fill = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.weightx = 0;
 
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        JButton registerBtn = new JButton("Register Customer");
-        JButton clearBtn    = new JButton("Clear");
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        btnRow.setBackground(FluentTheme.SURFACE);
 
-        registerBtn.setMnemonic('R');
+        JButton clearBtn = FluentTheme.secondaryButton("Clear");
         clearBtn.setMnemonic('C');
-
-        registerBtn.addActionListener(e -> onRegisterCustomer());
         clearBtn.addActionListener(e -> clearForm());
+        btnRow.add(clearBtn);
 
-        btnPanel.add(clearBtn);
-        btnPanel.add(registerBtn);
-        panel.add(btnPanel, gbc);
+        JButton registerBtn = FluentTheme.accentButton("Register Customer");
+        registerBtn.setMnemonic('R');
+        registerBtn.addActionListener(e -> onRegisterCustomer());
+        btnRow.add(registerBtn);
 
-        return panel;
+        form.add(btnRow, gbc);
+        card.add(form, BorderLayout.CENTER);
+        return card;
     }
 
     /**
-     * Builds the phone search bar below the registration form.
+     * Builds the search bar card below the registration form.
      *
-     * @return the search panel
+     * @return the search card panel
      */
-    private JPanel buildSearchBar() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Search Customer",
-            TitledBorder.LEFT, TitledBorder.TOP));
+    private JPanel buildSearchCard() {
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.SURFACE_ALT);
+        card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
 
-        panel.add(new JLabel("Search by Phone:"));
+        JPanel inner = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+        inner.setBackground(FluentTheme.SURFACE_ALT);
+        inner.setBorder(new EmptyBorder(0, FluentTheme.PADDING, 0, FluentTheme.PADDING));
 
-        searchPhoneField = new JTextField(15);
-        searchPhoneField.setToolTipText("Enter phone number to search");
-        panel.add(searchPhoneField);
+        JLabel searchLbl = makeLabel("Search by Phone:");
+        inner.add(searchLbl);
 
-        JButton searchBtn = new JButton("Search");
+        searchPhoneField = makeTextField("Enter phone number to search");
+        searchPhoneField.setPreferredSize(new Dimension(180, 32));
+        inner.add(searchPhoneField);
+
+        JButton searchBtn = FluentTheme.secondaryButton("Search");
         searchBtn.setMnemonic('S');
         searchBtn.addActionListener(e -> onSearchByPhone());
-        panel.add(searchBtn);
+        inner.add(searchBtn);
 
-        JButton showAllBtn = new JButton("Show All");
+        JButton showAllBtn = FluentTheme.ghostButton("Show All");
         showAllBtn.addActionListener(e -> {
             searchPhoneField.setText("");
             loadAllCustomers();
         });
-        panel.add(showAllBtn);
+        inner.add(showAllBtn);
 
-        return panel;
+        card.add(inner, BorderLayout.CENTER);
+        return card;
     }
 
     /**
@@ -194,40 +203,48 @@ public class CustomerPanel extends JPanel {
      * @return the table panel
      */
     private JPanel buildTableSection() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Customer List",
-            TitledBorder.LEFT, TitledBorder.TOP));
+        JPanel panel = new JPanel(new BorderLayout(0, 0));
+        panel.setBackground(FluentTheme.CANVAS);
+        panel.setBorder(new EmptyBorder(0, 0, 0, 0));
+
+        panel.add(FluentTheme.sectionHeader("Customer List"), BorderLayout.NORTH);
 
         tableModel    = new CustomerTableModel();
         customerTable = new JTable(tableModel);
-        customerTable.setRowHeight(22);
-        customerTable.setFillsViewportHeight(true);
+        FluentTheme.styleTable(customerTable);
         customerTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        customerTable.getTableHeader().setReorderingAllowed(false);
+
+        // Padded cell renderer for all columns
+        DefaultTableCellRenderer paddedRenderer = new DefaultTableCellRenderer();
+        paddedRenderer.setBorder(new EmptyBorder(0, 12, 0, 12));
+        for (int i = 0; i < tableModel.getColumnCount(); i++) {
+            customerTable.getColumnModel().getColumn(i).setCellRenderer(paddedRenderer);
+        }
 
         // Column widths
-        customerTable.getColumnModel().getColumn(0).setPreferredWidth(50);
-        customerTable.getColumnModel().getColumn(1).setPreferredWidth(180);
-        customerTable.getColumnModel().getColumn(2).setPreferredWidth(120);
-        customerTable.getColumnModel().getColumn(3).setPreferredWidth(170);
-        customerTable.getColumnModel().getColumn(4).setPreferredWidth(250);
+        customerTable.getColumnModel().getColumn(0).setPreferredWidth(55);
+        customerTable.getColumnModel().getColumn(1).setPreferredWidth(200);
+        customerTable.getColumnModel().getColumn(2).setPreferredWidth(130);
+        customerTable.getColumnModel().getColumn(3).setPreferredWidth(200);
+        customerTable.getColumnModel().getColumn(4).setPreferredWidth(280);
 
-        panel.add(new JScrollPane(customerTable), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(customerTable);
+        scroll.setBackground(FluentTheme.SURFACE);
+        scroll.getViewport().setBackground(FluentTheme.SURFACE);
+        scroll.setBorder(BorderFactory.createLineBorder(FluentTheme.BORDER, 1));
+
+        panel.add(scroll, BorderLayout.CENTER);
         return panel;
     }
 
     /**
      * Builds the bottom status bar label.
      *
-     * @return the status label wrapped in a panel
+     * @return the status bar panel
      */
     private JPanel buildStatusBar() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         statusLabel = new JLabel(" ");
-        statusLabel.setFont(statusLabel.getFont().deriveFont(Font.PLAIN, 11f));
-        panel.add(statusLabel);
-        return panel;
+        return FluentTheme.statusBar(statusLabel);
     }
 
     // ── Event Handlers ────────────────────────────────────────────────────────
@@ -242,7 +259,6 @@ public class CustomerPanel extends JPanel {
         String email   = emailField.getText().trim();
         String address = addressField.getText().trim();
 
-        // Inline UI-level validation
         if (name.isEmpty()) {
             showError("Customer name is required.");
             nameField.requestFocus();
@@ -273,14 +289,13 @@ public class CustomerPanel extends JPanel {
             @Override
             protected void done() {
                 try {
-                    get();  // re-throws any exception from doInBackground
+                    get();
                     setStatus("Customer '" + customer.getCustomerName() +
                               "' registered successfully (ID " + customer.getCustomerId() + ").");
                     clearForm();
                     loadAllCustomers();
                 } catch (Exception ex) {
-                    String msg = extractMessage(ex);
-                    showError("Failed to register customer.\n" + msg);
+                    showError("Failed to register customer.\n" + extractMessage(ex));
                     setStatus("Registration failed.");
                 }
             }
@@ -306,11 +321,8 @@ public class CustomerPanel extends JPanel {
             @Override
             protected Integer doInBackground() throws Exception {
                 results = customerService.getAllCustomers();
-                // find the row index matching the phone
                 for (int i = 0; i < results.size(); i++) {
-                    if (results.get(i).getPhone().equals(phone)) {
-                        return i;
-                    }
+                    if (results.get(i).getPhone().equals(phone)) return i;
                 }
                 return -1;
             }
@@ -320,7 +332,6 @@ public class CustomerPanel extends JPanel {
                 try {
                     int rowIndex = get();
                     tableModel.setData(results);
-
                     if (rowIndex >= 0) {
                         customerTable.setRowSelectionInterval(rowIndex, rowIndex);
                         customerTable.scrollRectToVisible(
@@ -347,7 +358,6 @@ public class CustomerPanel extends JPanel {
 
     /**
      * Loads all customers from the database and refreshes the table.
-     * Runs the DB call in a SwingWorker to avoid blocking the EDT.
      */
     private void loadAllCustomers() {
         setStatus("Loading customers…");
@@ -384,11 +394,9 @@ public class CustomerPanel extends JPanel {
     }
 
     /** Updates the status bar label text. */
-    private void setStatus(String message) {
-        statusLabel.setText(" " + message);
-    }
+    private void setStatus(String message) { statusLabel.setText(" " + message); }
 
-    /** Shows a validation-error dialog. */
+    /** Shows a validation-error dialog per AGENTS.md §4.5. */
     private void showError(String message) {
         JOptionPane.showMessageDialog(this, message, "Validation Error",
                                       JOptionPane.ERROR_MESSAGE);
@@ -405,11 +413,26 @@ public class CustomerPanel extends JPanel {
         return (cause != null) ? cause.getMessage() : ex.getMessage();
     }
 
+    /** Creates a styled muted-foreground JLabel. */
+    private JLabel makeLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(FluentTheme.FONT_BODY);
+        lbl.setForeground(FluentTheme.TEXT_MUTED);
+        return lbl;
+    }
+
+    /** Creates a styled input JTextField with placeholder tooltip. */
+    private JTextField makeTextField(String tooltip) {
+        JTextField f = new JTextField();
+        f.setToolTipText(tooltip);
+        FluentTheme.styleTextField(f);
+        return f;
+    }
+
     // ── Inner Table Model ─────────────────────────────────────────────────────
 
     /**
      * AbstractTableModel implementation backing the customer JTable.
-     * Keeps the data as a List of Customer objects.
      */
     private static class CustomerTableModel extends AbstractTableModel {
 
@@ -428,14 +451,10 @@ public class CustomerPanel extends JPanel {
             fireTableDataChanged();
         }
 
-        @Override
-        public int getRowCount()    { return data.size(); }
-
-        @Override
-        public int getColumnCount() { return COLUMNS.length; }
-
-        @Override
-        public String getColumnName(int col) { return COLUMNS[col]; }
+        @Override public int getRowCount()    { return data.size(); }
+        @Override public int getColumnCount() { return COLUMNS.length; }
+        @Override public String getColumnName(int col) { return COLUMNS[col]; }
+        @Override public boolean isCellEditable(int row, int col) { return false; }
 
         @Override
         public Object getValueAt(int row, int col) {
@@ -455,17 +474,12 @@ public class CustomerPanel extends JPanel {
             return (col == 0) ? Integer.class : String.class;
         }
 
-        @Override
-        public boolean isCellEditable(int row, int col) { return false; }
-
         /**
          * Returns the Customer at the given row index.
          *
          * @param row table row index
          * @return the Customer object at that row
          */
-        public Customer getCustomerAt(int row) {
-            return data.get(row);
-        }
+        public Customer getCustomerAt(int row) { return data.get(row); }
     }
 }

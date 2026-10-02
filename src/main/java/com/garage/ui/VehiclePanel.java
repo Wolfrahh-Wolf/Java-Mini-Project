@@ -15,8 +15,10 @@ import com.garage.service.CustomerService;
 import com.garage.service.VehicleService;
 
 import javax.swing.*;
-import javax.swing.border.TitledBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.MatteBorder;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -69,8 +71,8 @@ public class VehiclePanel extends JPanel {
      * Constructs the VehiclePanel and initialises the UI.
      */
     public VehiclePanel() {
-        setLayout(new BorderLayout(0, 8));
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        setLayout(new BorderLayout(0, 0));
+        setBackground(FluentTheme.CANVAS);
 
         add(buildTopSection(),   BorderLayout.NORTH);
         add(buildTableSection(), BorderLayout.CENTER);
@@ -80,135 +82,151 @@ public class VehiclePanel extends JPanel {
     // ── UI Builders ───────────────────────────────────────────────────────────
 
     /**
-     * Builds the top section: customer lookup + vehicle registration form stacked vertically.
+     * Builds the top section: customer lookup card + vehicle form card stacked vertically.
      *
      * @return the assembled top panel
      */
     private JPanel buildTopSection() {
-        JPanel wrapper = new JPanel(new BorderLayout(0, 6));
-        wrapper.add(buildCustomerLookup(), BorderLayout.NORTH);
-        wrapper.add(buildVehicleForm(),    BorderLayout.CENTER);
+        JPanel wrapper = new JPanel(new BorderLayout(0, 0));
+        wrapper.setBackground(FluentTheme.CANVAS);
+        wrapper.add(buildCustomerLookupCard(), BorderLayout.NORTH);
+        wrapper.add(buildVehicleFormCard(),    BorderLayout.CENTER);
         return wrapper;
     }
 
     /**
-     * Builds the customer lookup sub-panel.
+     * Builds the customer lookup card (Step 1).
      *
      * @return the customer lookup panel
      */
-    private JPanel buildCustomerLookup() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 4));
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Step 1 — Select Customer Owner",
-            TitledBorder.LEFT, TitledBorder.TOP));
+    private JPanel buildCustomerLookupCard() {
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.SURFACE);
+        card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
 
-        panel.add(new JLabel("Customer Phone:"));
+        card.add(FluentTheme.sectionHeader("Step 1 — Select Customer Owner"), BorderLayout.NORTH);
 
-        customerPhoneField = new JTextField(14);
+        JPanel inner = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
+        inner.setBackground(FluentTheme.SURFACE);
+        inner.setBorder(new EmptyBorder(0, FluentTheme.PADDING, 4, FluentTheme.PADDING));
+
+        JLabel phoneLbl = new JLabel("Customer Phone:");
+        phoneLbl.setFont(FluentTheme.FONT_BODY);
+        phoneLbl.setForeground(FluentTheme.TEXT_MUTED);
+        inner.add(phoneLbl);
+
+        customerPhoneField = new JTextField(16);
+        FluentTheme.styleTextField(customerPhoneField);
         customerPhoneField.setToolTipText("Enter phone number and click Find");
-        panel.add(customerPhoneField);
+        inner.add(customerPhoneField);
 
-        JButton findBtn = new JButton("Find Customer");
+        JButton findBtn = FluentTheme.secondaryButton("Find Customer");
         findBtn.setMnemonic('F');
         findBtn.addActionListener(e -> onFindCustomer());
-        panel.add(findBtn);
+        inner.add(findBtn);
 
         customerInfoLabel = new JLabel("  No customer selected.");
-        customerInfoLabel.setFont(customerInfoLabel.getFont().deriveFont(Font.BOLD));
-        customerInfoLabel.setForeground(Color.DARK_GRAY);
-        panel.add(customerInfoLabel);
+        customerInfoLabel.setFont(FluentTheme.FONT_BODY);
+        customerInfoLabel.setForeground(FluentTheme.TEXT_MUTED);
+        inner.add(customerInfoLabel);
 
-        return panel;
+        card.add(inner, BorderLayout.CENTER);
+        return card;
     }
 
     /**
-     * Builds the vehicle registration form using GridBagLayout.
+     * Builds the vehicle registration form card (Step 2).
      *
-     * @return the vehicle registration form panel
+     * @return the vehicle form panel
      */
-    private JPanel buildVehicleForm() {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Step 2 — Register Vehicle",
-            TitledBorder.LEFT, TitledBorder.TOP));
+    private JPanel buildVehicleFormCard() {
+        JPanel card = new JPanel(new BorderLayout(0, 0));
+        card.setBackground(FluentTheme.SURFACE_ALT);
+        card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
+
+        card.add(FluentTheme.sectionHeader("Step 2 — Register Vehicle"), BorderLayout.NORTH);
+
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(FluentTheme.SURFACE_ALT);
+        form.setBorder(new EmptyBorder(FluentTheme.PADDING, FluentTheme.PADDING,
+                                       FluentTheme.PADDING, FluentTheme.PADDING));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(4, 6, 4, 6);
+        gbc.insets = new Insets(6, 8, 6, 8);
         gbc.anchor = GridBagConstraints.WEST;
         gbc.fill   = GridBagConstraints.HORIZONTAL;
 
-        // ── Row 0 ─────────────────────────────────────────────────────────
-        addFormRow(panel, gbc, 0, 0, "Registration No *:", regNoField = new JTextField(12),
-                   2, 3, "Make *:", makeField = new JTextField(14));
-
-        // ── Row 1 ─────────────────────────────────────────────────────────
-        addFormRow(panel, gbc, 0, 1, "Model *:", modelField = new JTextField(14),
-                   2, 3, "Year *:", yearField = new JTextField(6));
-
-        // ── Row 2 ─────────────────────────────────────────────────────────
-        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0;
-        panel.add(new JLabel("Fuel Type *:"), gbc);
-
-        fuelTypeCombo = new JComboBox<>(FUEL_TYPES);
-        gbc.gridx = 1; gbc.weightx = 0.5;
-        panel.add(fuelTypeCombo, gbc);
+        // ── Row 0: Reg No / Make ───────────────────────────────────────────────
+        gbc.gridx = 0; gbc.gridy = 0; gbc.weightx = 0;
+        form.add(makeLabel("Registration No *"), gbc);
+        regNoField = makeTextField("Number plate, e.g. TN09AB1234");
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        form.add(regNoField, gbc);
 
         gbc.gridx = 2; gbc.weightx = 0;
-        panel.add(new JLabel("Colour:"), gbc);
+        form.add(makeLabel("Make *"), gbc);
+        makeField = makeTextField("Manufacturer, e.g. Toyota");
+        gbc.gridx = 3; gbc.weightx = 1.0;
+        form.add(makeField, gbc);
 
-        colorField = new JTextField(14);
-        colorField.setToolTipText("Optional — body colour");
+        // ── Row 1: Model / Year ────────────────────────────────────────────────
+        gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
+        form.add(makeLabel("Model *"), gbc);
+        modelField = makeTextField("Model name, e.g. Camry");
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        form.add(modelField, gbc);
+
+        gbc.gridx = 2; gbc.weightx = 0;
+        form.add(makeLabel("Year *"), gbc);
+        yearField = makeTextField("Year of manufacture");
         gbc.gridx = 3; gbc.weightx = 0.5;
-        panel.add(colorField, gbc);
+        form.add(yearField, gbc);
 
-        // ── Row 3 ─────────────────────────────────────────────────────────
+        // ── Row 2: Fuel Type / Colour ──────────────────────────────────────────
+        gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0;
+        form.add(makeLabel("Fuel Type *"), gbc);
+        fuelTypeCombo = new JComboBox<>(FUEL_TYPES);
+        FluentTheme.styleCombo(fuelTypeCombo);
+        gbc.gridx = 1; gbc.weightx = 1.0;
+        form.add(fuelTypeCombo, gbc);
+
+        gbc.gridx = 2; gbc.weightx = 0;
+        form.add(makeLabel("Colour"), gbc);
+        colorField = makeTextField("Optional — body colour");
+        gbc.gridx = 3; gbc.weightx = 1.0;
+        form.add(colorField, gbc);
+
+        // ── Row 3: Odometer ───────────────────────────────────────────────────
         gbc.gridx = 0; gbc.gridy = 3; gbc.weightx = 0;
-        panel.add(new JLabel("Odometer (km):"), gbc);
-
-        odometerField = new JTextField(8);
+        form.add(makeLabel("Odometer (km)"), gbc);
+        odometerField = makeTextField("Current odometer reading in km");
         odometerField.setText("0");
-        odometerField.setToolTipText("Current odometer reading in km");
         gbc.gridx = 1; gbc.weightx = 0.5;
-        panel.add(odometerField, gbc);
+        form.add(odometerField, gbc);
 
-        // ── Row 4: Buttons ────────────────────────────────────────────────
+        // ── Row 4: Buttons ─────────────────────────────────────────────────────
         gbc.gridx = 0; gbc.gridy = 4;
         gbc.gridwidth = 4;
         gbc.fill   = GridBagConstraints.NONE;
         gbc.anchor = GridBagConstraints.EAST;
         gbc.weightx = 0;
 
-        JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 6, 0));
-        JButton clearBtn    = new JButton("Clear");
-        JButton registerBtn = new JButton("Register Vehicle");
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        btnRow.setBackground(FluentTheme.SURFACE_ALT);
 
+        JButton clearBtn = FluentTheme.secondaryButton("Clear");
         clearBtn.setMnemonic('C');
-        registerBtn.setMnemonic('R');
-
         clearBtn.addActionListener(e -> clearVehicleForm());
+        btnRow.add(clearBtn);
+
+        JButton registerBtn = FluentTheme.accentButton("Register Vehicle");
+        registerBtn.setMnemonic('R');
         registerBtn.addActionListener(e -> onRegisterVehicle());
+        btnRow.add(registerBtn);
 
-        btnPanel.add(clearBtn);
-        btnPanel.add(registerBtn);
-        panel.add(btnPanel, gbc);
-
-        return panel;
-    }
-
-    /**
-     * Helper to add a label + field pair in a GridBagLayout row (two columns per row).
-     */
-    private void addFormRow(JPanel panel, GridBagConstraints gbc,
-                            int col1, int row, String label1, JTextField field1,
-                            int col2, int col3, String label2, JTextField field2) {
-        gbc.gridx = col1; gbc.gridy = row; gbc.weightx = 0; gbc.gridwidth = 1;
-        panel.add(new JLabel(label1), gbc);
-        gbc.gridx = col2 - 1; gbc.weightx = 1.0;
-        panel.add(field1, gbc);
-        gbc.gridx = col2; gbc.weightx = 0;
-        panel.add(new JLabel(label2), gbc);
-        gbc.gridx = col3; gbc.weightx = 1.0;
-        panel.add(field2, gbc);
+        form.add(btnRow, gbc);
+        card.add(form, BorderLayout.CENTER);
+        return card;
     }
 
     /**
@@ -217,43 +235,49 @@ public class VehiclePanel extends JPanel {
      * @return the table panel
      */
     private JPanel buildTableSection() {
-        JPanel panel = new JPanel(new BorderLayout());
-        panel.setBorder(BorderFactory.createTitledBorder(
-            BorderFactory.createEtchedBorder(), "Vehicles for Selected Customer",
-            TitledBorder.LEFT, TitledBorder.TOP));
+        JPanel panel = new JPanel(new BorderLayout(0, 0));
+        panel.setBackground(FluentTheme.CANVAS);
+
+        panel.add(FluentTheme.sectionHeader("Vehicles for Selected Customer"), BorderLayout.NORTH);
 
         tableModel   = new VehicleTableModel();
         vehicleTable = new JTable(tableModel);
-        vehicleTable.setRowHeight(22);
-        vehicleTable.setFillsViewportHeight(true);
+        FluentTheme.styleTable(vehicleTable);
         vehicleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        vehicleTable.getTableHeader().setReorderingAllowed(false);
+
+        DefaultTableCellRenderer paddedRenderer = new DefaultTableCellRenderer();
+        paddedRenderer.setBorder(new EmptyBorder(0, 12, 0, 12));
+        for (int i = 0; i < tableModel.getColumnCount(); i++) {
+            vehicleTable.getColumnModel().getColumn(i).setCellRenderer(paddedRenderer);
+        }
 
         // Column widths
-        vehicleTable.getColumnModel().getColumn(0).setPreferredWidth(50);
-        vehicleTable.getColumnModel().getColumn(1).setPreferredWidth(110);
-        vehicleTable.getColumnModel().getColumn(2).setPreferredWidth(110);
-        vehicleTable.getColumnModel().getColumn(3).setPreferredWidth(110);
-        vehicleTable.getColumnModel().getColumn(4).setPreferredWidth(50);
+        vehicleTable.getColumnModel().getColumn(0).setPreferredWidth(55);
+        vehicleTable.getColumnModel().getColumn(1).setPreferredWidth(120);
+        vehicleTable.getColumnModel().getColumn(2).setPreferredWidth(120);
+        vehicleTable.getColumnModel().getColumn(3).setPreferredWidth(120);
+        vehicleTable.getColumnModel().getColumn(4).setPreferredWidth(60);
         vehicleTable.getColumnModel().getColumn(5).setPreferredWidth(80);
         vehicleTable.getColumnModel().getColumn(6).setPreferredWidth(100);
-        vehicleTable.getColumnModel().getColumn(7).setPreferredWidth(90);
+        vehicleTable.getColumnModel().getColumn(7).setPreferredWidth(110);
 
-        panel.add(new JScrollPane(vehicleTable), BorderLayout.CENTER);
+        JScrollPane scroll = new JScrollPane(vehicleTable);
+        scroll.setBackground(FluentTheme.SURFACE);
+        scroll.getViewport().setBackground(FluentTheme.SURFACE);
+        scroll.setBorder(BorderFactory.createLineBorder(FluentTheme.BORDER, 1));
+
+        panel.add(scroll, BorderLayout.CENTER);
         return panel;
     }
 
     /**
      * Builds the status bar.
      *
-     * @return the status panel
+     * @return the status bar panel
      */
     private JPanel buildStatusBar() {
-        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 2));
         statusLabel = new JLabel(" ");
-        statusLabel.setFont(statusLabel.getFont().deriveFont(Font.PLAIN, 11f));
-        panel.add(statusLabel);
-        return panel;
+        return FluentTheme.statusBar(statusLabel);
     }
 
     // ── Event Handlers ────────────────────────────────────────────────────────
@@ -282,15 +306,15 @@ public class VehiclePanel extends JPanel {
                     Customer c = get();
                     if (c != null) {
                         selectedCustomer = c;
-                        customerInfoLabel.setText(
-                            "  ✔  " + c.getCustomerName() + "  (ID " + c.getCustomerId() + ")");
-                        customerInfoLabel.setForeground(new Color(0, 130, 0));
+                        customerInfoLabel.setText("  ✔  " + c.getCustomerName() +
+                                                  "  (ID " + c.getCustomerId() + ")");
+                        customerInfoLabel.setForeground(FluentTheme.STATUS_SUCCESS);
                         setStatus("Customer found. Fill in vehicle details and click Register.");
                         loadVehiclesForCustomer(c.getCustomerId());
                     } else {
                         selectedCustomer = null;
                         customerInfoLabel.setText("  ✘  No customer found for phone: " + phone);
-                        customerInfoLabel.setForeground(Color.RED);
+                        customerInfoLabel.setForeground(FluentTheme.STATUS_ERROR);
                         tableModel.setData(new ArrayList<>());
                         setStatus("Customer not found.");
                     }
@@ -304,7 +328,6 @@ public class VehiclePanel extends JPanel {
 
     /**
      * Handles the "Register Vehicle" button click.
-     * Validates all fields and then inserts via VehicleService in a SwingWorker.
      */
     private void onRegisterVehicle() {
         if (selectedCustomer == null) {
@@ -320,11 +343,10 @@ public class VehiclePanel extends JPanel {
         String color    = colorField.getText().trim();
         String odomStr  = odometerField.getText().trim();
 
-        // UI-level validation
-        if (regNo.isEmpty())  { showError("Registration number is required."); regNoField.requestFocus();  return; }
-        if (make.isEmpty())   { showError("Make (manufacturer) is required."); makeField.requestFocus();   return; }
-        if (model.isEmpty())  { showError("Model name is required.");          modelField.requestFocus();  return; }
-        if (yearStr.isEmpty()){ showError("Year of manufacture is required."); yearField.requestFocus();   return; }
+        if (regNo.isEmpty())   { showError("Registration number is required."); regNoField.requestFocus();  return; }
+        if (make.isEmpty())    { showError("Make (manufacturer) is required."); makeField.requestFocus();   return; }
+        if (model.isEmpty())   { showError("Model name is required.");          modelField.requestFocus();  return; }
+        if (yearStr.isEmpty()) { showError("Year of manufacture is required."); yearField.requestFocus();   return; }
 
         int year;
         try { year = Integer.parseInt(yearStr); }
@@ -422,11 +444,9 @@ public class VehiclePanel extends JPanel {
     }
 
     /** Updates the status bar text. */
-    private void setStatus(String message) {
-        statusLabel.setText(" " + message);
-    }
+    private void setStatus(String message) { statusLabel.setText(" " + message); }
 
-    /** Shows a validation error dialog. */
+    /** Shows a validation error dialog per AGENTS.md §4.5. */
     private void showError(String message) {
         JOptionPane.showMessageDialog(this, message, "Validation Error",
                                       JOptionPane.ERROR_MESSAGE);
@@ -441,6 +461,22 @@ public class VehiclePanel extends JPanel {
     private String extractMessage(Exception ex) {
         Throwable cause = ex.getCause();
         return (cause != null) ? cause.getMessage() : ex.getMessage();
+    }
+
+    /** Creates a styled muted-foreground JLabel. */
+    private JLabel makeLabel(String text) {
+        JLabel lbl = new JLabel(text);
+        lbl.setFont(FluentTheme.FONT_BODY);
+        lbl.setForeground(FluentTheme.TEXT_MUTED);
+        return lbl;
+    }
+
+    /** Creates a styled input JTextField with placeholder tooltip. */
+    private JTextField makeTextField(String tooltip) {
+        JTextField f = new JTextField();
+        f.setToolTipText(tooltip);
+        FluentTheme.styleTextField(f);
+        return f;
     }
 
     // ── Inner Table Model ─────────────────────────────────────────────────────
@@ -465,14 +501,10 @@ public class VehiclePanel extends JPanel {
             fireTableDataChanged();
         }
 
-        @Override
-        public int getRowCount()    { return data.size(); }
-
-        @Override
-        public int getColumnCount() { return COLUMNS.length; }
-
-        @Override
-        public String getColumnName(int col) { return COLUMNS[col]; }
+        @Override public int getRowCount()    { return data.size(); }
+        @Override public int getColumnCount() { return COLUMNS.length; }
+        @Override public String getColumnName(int col) { return COLUMNS[col]; }
+        @Override public boolean isCellEditable(int row, int col) { return false; }
 
         @Override
         public Object getValueAt(int row, int col) {
@@ -497,8 +529,5 @@ public class VehiclePanel extends JPanel {
                 default -> String.class;
             };
         }
-
-        @Override
-        public boolean isCellEditable(int row, int col) { return false; }
     }
 }
