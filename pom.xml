@@ -53,6 +53,20 @@
             <version>${dotenv.version}</version>
         </dependency>
 
+        <!-- Core FlatLaf dependency -->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+
+        <!-- Optional FlatLaf Extras (Icons & Utilities) -->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-extras</artifactId>
+            <version>3.5.1</version>
+        </dependency>
+
     </dependencies>
 
     <!-- ── Repositories ─────────────────────────────────────────────────── -->
