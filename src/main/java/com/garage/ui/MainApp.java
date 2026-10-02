@@ -48,7 +48,7 @@ public class MainApp {
                 "Please ensure:\n" +
                 "  1. Docker container 'vsms_oracle' is running\n" +
                 "  2. .env file exists with correct DB_URL, DB_USER, DB_PASSWORD\n\n" +
-                "Error: " + e.getCause().getMessage(),
+                "Error: " + (e.getCause() != null ? e.getCause().getMessage() : e.getMessage()),
                 "Fatal Database Error",
                 JOptionPane.ERROR_MESSAGE
             );
