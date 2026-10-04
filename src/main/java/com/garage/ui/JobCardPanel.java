@@ -714,7 +714,7 @@ public class JobCardPanel extends JPanel {
 
             setHorizontalAlignment(SwingConstants.CENTER);
             setFont(FluentTheme.FONT_SEMIBOLD);
-            setBorder(new EmptyBorder(0, 8, 0, 8));
+            setBorder(new EmptyBorder(0, 12, 0, 12));
 
             if (!isSelected) {
                 String status = (value != null) ? value.toString() : "";

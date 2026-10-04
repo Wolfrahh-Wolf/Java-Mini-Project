@@ -222,7 +222,7 @@ public class ServiceHistoryPanel extends JPanel {
         // Right-align Invoice Total column (index 6)
         DefaultTableCellRenderer rightAlign = new DefaultTableCellRenderer();
         rightAlign.setHorizontalAlignment(SwingConstants.RIGHT);
-        rightAlign.setBorder(new EmptyBorder(0, 4, 0, 12));
+        rightAlign.setBorder(new EmptyBorder(0, 12, 0, 12));
         table.getColumnModel().getColumn(6).setCellRenderer(rightAlign);
 
         int[] widths = {55, 140, 110, 160, 120, 80, 110, 90};
@@ -485,7 +485,7 @@ public class ServiceHistoryPanel extends JPanel {
 
             setHorizontalAlignment(SwingConstants.CENTER);
             setFont(FluentTheme.FONT_SEMIBOLD);
-            setBorder(new EmptyBorder(0, 8, 0, 8));
+            setBorder(new EmptyBorder(0, 12, 0, 12));
 
             if (!isSelected) {
                 String status = (value != null) ? value.toString() : "";

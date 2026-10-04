@@ -245,7 +245,7 @@ public class BillingPanel extends JPanel {
         // Right-align currency columns
         DefaultTableCellRenderer rightPadded = new DefaultTableCellRenderer();
         rightPadded.setHorizontalAlignment(SwingConstants.RIGHT);
-        rightPadded.setBorder(new EmptyBorder(0, 4, 0, 12));
+        rightPadded.setBorder(new EmptyBorder(0, 12, 0, 12));
         itemTable.getColumnModel().getColumn(4).setCellRenderer(rightPadded);
         itemTable.getColumnModel().getColumn(5).setCellRenderer(rightPadded);
 

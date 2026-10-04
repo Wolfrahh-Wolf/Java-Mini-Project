@@ -11,6 +11,7 @@ package com.garage.ui;
 import com.formdev.flatlaf.FlatDarkLaf;
 
 import javax.swing.*;
+import java.awt.Insets;
 
 /**
  * Entry point for the Vehicle Service Management System.
@@ -36,6 +37,7 @@ public class MainApp {
         try {
             FlatDarkLaf.setup();
             FluentTheme.applyGlobalDefaults();
+            UIManager.put("Table.cellMargins", new Insets(4, 12, 4, 12));
         } catch (Exception e) {
             System.err.println("MainApp: Could not install FlatDarkLaf. " +
                                "Falling back to system L&F. Cause: " + e.getMessage());
