@@ -25,8 +25,8 @@ import java.awt.*;
  *   <li>{@link #SURFACE}      — card / panel fill (#292929)</li>
  *   <li>{@link #BORDER}       — divider / outline (#3D3D3D)</li>
  *   <li>{@link #INPUT_BG}     — text-field / combo background (#333333)</li>
- *   <li>{@link #ACCENT}       — Fluent Blue primary (#479EF5)</li>
- *   <li>{@link #ACCENT_HOVER} — Fluent Blue hover (#0D7CF2)</li>
+ *   <li>{@link #ACCENT}       — Fluent Blue primary (#0D7CF2)</li>
+ *   <li>{@link #ACCENT_HOVER} — Fluent Blue hover (#0078D4)</li>
  *   <li>{@link #TEXT_PRIMARY} — off-white primary text (#FFFFFF)</li>
  *   <li>{@link #TEXT_MUTED}   — secondary / caption text (#ADADAD)</li>
  *   <li>{@link #SELECTION_BG} — row-selection fill (#1C3B5E)</li>
@@ -48,9 +48,9 @@ public final class FluentTheme {
     /** Input field background. */
     public static final Color INPUT_BG     = new Color(0x333333);
     /** Fluent Blue — primary accent. */
-    public static final Color ACCENT       = new Color(0x479EF5);
+    public static final Color ACCENT       = new Color(0x0D7CF2);
     /** Fluent Blue — hovered / pressed state. */
-    public static final Color ACCENT_HOVER = new Color(0x0D7CF2);
+    public static final Color ACCENT_HOVER = new Color(0x0078D4);
     /** Accent with low opacity — used for focus rings, selection states. */
     public static final Color ACCENT_MUTED = new Color(0x1C3B5E);
     /** Primary (off-white) text. */
@@ -70,7 +70,7 @@ public final class FluentTheme {
     /** Warning amber. */
     public static final Color STATUS_WARNING  = new Color(0xFCB900);
     /** Neutral blue. */
-    public static final Color STATUS_INFO     = new Color(0x479EF5);
+    public static final Color STATUS_INFO     = new Color(0x0D7CF2);
     /** Muted grey. */
     public static final Color STATUS_NEUTRAL  = new Color(0x888888);
     /** Error red. */

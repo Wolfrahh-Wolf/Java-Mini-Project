@@ -124,14 +124,14 @@ public class CustomerPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
         form.add(makeLabel("Email"), gbc);
 
-        emailField = makeTextField("Optional — email address");
+        emailField = makeTextField("Optional - email address");
         gbc.gridx = 1; gbc.weightx = 1.0;
         form.add(emailField, gbc);
 
         gbc.gridx = 2; gbc.weightx = 0;
         form.add(makeLabel("Address"), gbc);
 
-        addressField = makeTextField("Optional — street / city");
+        addressField = makeTextField("Optional - street / city");
         gbc.gridx = 3; gbc.weightx = 0.6;
         form.add(addressField, gbc);
 

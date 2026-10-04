@@ -91,7 +91,7 @@ public class BookingPanel extends JPanel {
         card.setBackground(FluentTheme.SURFACE);
         card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
 
-        card.add(FluentTheme.sectionHeader("Step 1 — Find Vehicle by Registration Number"),
+        card.add(FluentTheme.sectionHeader("Step 1 - Find Vehicle by Registration Number"),
                  BorderLayout.NORTH);
 
         JPanel form = new JPanel(new GridBagLayout());
@@ -124,7 +124,7 @@ public class BookingPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = 1; gbc.weightx = 0;
         form.add(makeLabel("Vehicle:"), gbc);
 
-        vehicleInfoLabel = new JLabel("— not found yet —");
+        vehicleInfoLabel = new JLabel("- not found yet -");
         vehicleInfoLabel.setFont(FluentTheme.FONT_SEMIBOLD);
         vehicleInfoLabel.setForeground(FluentTheme.TEXT_MUTED);
         gbc.gridx = 1; gbc.gridwidth = 2; gbc.weightx = 1.0;
@@ -135,7 +135,7 @@ public class BookingPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = 2; gbc.weightx = 0;
         form.add(makeLabel("Owner:"), gbc);
 
-        ownerInfoLabel = new JLabel("—");
+        ownerInfoLabel = new JLabel("-");
         ownerInfoLabel.setFont(FluentTheme.FONT_SEMIBOLD);
         ownerInfoLabel.setForeground(FluentTheme.TEXT_MUTED);
         gbc.gridx = 1; gbc.gridwidth = 2; gbc.weightx = 1.0;
@@ -155,7 +155,7 @@ public class BookingPanel extends JPanel {
         card.setBackground(FluentTheme.SURFACE_ALT);
         card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
 
-        card.add(FluentTheme.sectionHeader("Step 2 — Book Appointment"), BorderLayout.NORTH);
+        card.add(FluentTheme.sectionHeader("Step 2 - Book Appointment"), BorderLayout.NORTH);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(FluentTheme.SURFACE_ALT);
@@ -272,7 +272,7 @@ public class BookingPanel extends JPanel {
         setStatus("Looking up vehicle '" + regNo + "'...");
         vehicleInfoLabel.setText("Searching...");
         vehicleInfoLabel.setForeground(FluentTheme.TEXT_MUTED);
-        ownerInfoLabel.setText("—");
+        ownerInfoLabel.setText("-");
 
         new SwingWorker<Object[], Void>() {
             @Override
@@ -293,7 +293,7 @@ public class BookingPanel extends JPanel {
                         selectedVehicle = null;
                         vehicleInfoLabel.setText("✘  No vehicle found for: " + regNo);
                         vehicleInfoLabel.setForeground(FluentTheme.STATUS_ERROR);
-                        ownerInfoLabel.setText("—");
+                        ownerInfoLabel.setText("-");
                         ownerInfoLabel.setForeground(FluentTheme.TEXT_MUTED);
                         setStatus("Vehicle not found.");
                     } else {
@@ -301,7 +301,7 @@ public class BookingPanel extends JPanel {
                         String ownerName = (String) result[1];
                         vehicleInfoLabel.setText("✔  " + selectedVehicle.getMake() +
                             " " + selectedVehicle.getModel() +
-                            "  (" + selectedVehicle.getYearOfMfr() + ")  —  " +
+                            "  (" + selectedVehicle.getYearOfMfr() + ")  -  " +
                             selectedVehicle.getFuelType());
                         vehicleInfoLabel.setForeground(FluentTheme.STATUS_SUCCESS);
                         ownerInfoLabel.setText(ownerName);
@@ -381,7 +381,7 @@ public class BookingPanel extends JPanel {
                         JOptionPane.INFORMATION_MESSAGE
                     );
 
-                    setStatus("Job Card #" + jc.getJobCardId() + " created — status: BOOKED.");
+                    setStatus("Job Card #" + jc.getJobCardId() + " created - status: BOOKED.");
                     clearBookingForm();
 
                 } catch (Exception ex) {
@@ -433,9 +433,9 @@ public class BookingPanel extends JPanel {
         regNoSearchField.setText("");
         remarksArea.setText("");
         selectedVehicle = null;
-        vehicleInfoLabel.setText("— not found yet —");
+        vehicleInfoLabel.setText("- not found yet -");
         vehicleInfoLabel.setForeground(FluentTheme.TEXT_MUTED);
-        ownerInfoLabel.setText("—");
+        ownerInfoLabel.setText("-");
         ownerInfoLabel.setForeground(FluentTheme.TEXT_MUTED);
 
         Calendar tomorrow = Calendar.getInstance();

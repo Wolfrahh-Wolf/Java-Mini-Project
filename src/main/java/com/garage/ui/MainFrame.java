@@ -38,7 +38,7 @@ public class MainFrame extends JFrame {
      * Must be called from the EDT only.
      */
     public MainFrame() {
-        super("Garage Pro — Vehicle Service Management System");
+        super("Garage Pro - Vehicle Service Management System");
 
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setMinimumSize(new Dimension(1100, 720));
@@ -103,13 +103,6 @@ public class MainFrame extends JFrame {
 
         header.add(brand, BorderLayout.WEST);
 
-        // Right: version / env badge
-        JLabel badge = new JLabel("v1.0  |  Oracle 23c  ");
-        badge.setFont(FluentTheme.FONT_CAPTION);
-        badge.setForeground(FluentTheme.TEXT_MUTED);
-        badge.setBorder(new EmptyBorder(0, 0, 0, 16));
-        header.add(badge, BorderLayout.EAST);
-
         return header;
     }
 
@@ -145,16 +138,11 @@ public class MainFrame extends JFrame {
         bar.setBackground(new Color(0x1A1A1A));
         bar.setBorder(new MatteBorder(1, 0, 0, 0, FluentTheme.BORDER));
 
-        JLabel left = new JLabel("  Ready — Garage Pro v1.0");
+        JLabel left = new JLabel("  Ready - Garage Pro v1.0");
         left.setFont(FluentTheme.FONT_CAPTION);
         left.setForeground(FluentTheme.TEXT_MUTED);
         left.setBorder(new EmptyBorder(4, 8, 4, 0));
         bar.add(left, BorderLayout.WEST);
-
-        JLabel right = new JLabel("UIT3361 OOP Java / UIT3311 Database Technology  ");
-        right.setFont(FluentTheme.FONT_CAPTION);
-        right.setForeground(new Color(0x555555));
-        bar.add(right, BorderLayout.EAST);
 
         return bar;
     }

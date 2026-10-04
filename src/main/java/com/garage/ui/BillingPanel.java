@@ -189,12 +189,12 @@ public class BillingPanel extends JPanel {
         gbc.insets = new Insets(4, 8, 4, 16);
         gbc.anchor = GridBagConstraints.WEST;
 
-        invoiceIdLabel   = makeValueLabel("—");
+        invoiceIdLabel   = makeValueLabel("-");
         invoiceIdLabel.setFont(FluentTheme.FONT_SEMIBOLD);
-        invoiceDateLabel = makeValueLabel("—");
-        vehicleLabel     = makeValueLabel("—");
-        customerLabel    = makeValueLabel("—");
-        paymentStatusBadge = makeValueLabel("—");
+        invoiceDateLabel = makeValueLabel("-");
+        vehicleLabel     = makeValueLabel("-");
+        customerLabel    = makeValueLabel("-");
+        paymentStatusBadge = makeValueLabel("-");
         paymentStatusBadge.setOpaque(true);
         paymentStatusBadge.setBorder(new EmptyBorder(2, 8, 2, 8));
 
@@ -278,24 +278,28 @@ public class BillingPanel extends JPanel {
      */
     private JPanel buildSummaryPanel() {
         JPanel panel = new JPanel(new GridBagLayout());
-        panel.setPreferredSize(new Dimension(240, 0));
+        // Use minimumSize + no hardcoded preferred width so the panel stretches properly
+        panel.setMinimumSize(new Dimension(220, 0));
         panel.setBackground(FluentTheme.SURFACE);
         panel.setBorder(new MatteBorder(0, 1, 0, 0, FluentTheme.BORDER));
 
         GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(6, 16, 6, 16);
-        gbc.anchor = GridBagConstraints.WEST;
-        gbc.fill   = GridBagConstraints.HORIZONTAL;
+        gbc.anchor  = GridBagConstraints.WEST;
+        gbc.fill    = GridBagConstraints.HORIZONTAL;
         gbc.weightx = 1.0;
 
-        int row = 0;
+        // Section header spanning both label + value columns
+        gbc.gridx = 0; gbc.gridy = 0;
+        gbc.gridwidth = 2;
+        gbc.insets = new Insets(0, 0, 0, 0);
         panel.add(FluentTheme.sectionHeader("Summary"), gbc);
-        gbc.gridy = ++row;
+        gbc.gridwidth = 1;
 
-        labourTotalLabel = makeValueLabel("₹ —");
-        partsTotalLabel  = makeValueLabel("₹ —");
-        taxAmountLabel   = makeValueLabel("₹ —");
-        grandTotalLabel  = makeValueLabel("₹ —");
+        int row = 1;
+        labourTotalLabel = makeValueLabel("- ");
+        partsTotalLabel  = makeValueLabel("- ");
+        taxAmountLabel   = makeValueLabel("- ");
+        grandTotalLabel  = makeValueLabel("- ");
         grandTotalLabel.setFont(FluentTheme.FONT_LARGE);
         grandTotalLabel.setForeground(FluentTheme.ACCENT);
 
@@ -307,6 +311,7 @@ public class BillingPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = row++; gbc.gridwidth = 2;
         gbc.insets = new Insets(4, 8, 4, 8);
         panel.add(new JSeparator(), gbc);
+        gbc.gridwidth = 1;
 
         addSummaryRow(panel, gbc, row++, "GRAND TOTAL:", grandTotalLabel);
 
@@ -314,6 +319,7 @@ public class BillingPanel extends JPanel {
         gbc.gridx = 0; gbc.gridy = row++; gbc.gridwidth = 2;
         gbc.insets = new Insets(12, 8, 4, 8);
         panel.add(new JSeparator(), gbc);
+        gbc.gridwidth = 1;
 
         gbc.insets = new Insets(6, 16, 4, 16);
         gbc.gridwidth = 2;
@@ -322,22 +328,29 @@ public class BillingPanel extends JPanel {
         modeLabel.setFont(FluentTheme.FONT_SEMIBOLD);
         modeLabel.setForeground(FluentTheme.TEXT_MUTED);
         panel.add(modeLabel, gbc);
+        gbc.gridwidth = 1;
 
+        gbc.gridwidth = 2;
+        gbc.gridx = 0; gbc.gridy = row++;
         paymentModeCombo = new JComboBox<>(
             new String[]{"CASH", "CARD", "UPI", "ONLINE", "CHEQUE"});
         FluentTheme.styleCombo(paymentModeCombo);
-        gbc.gridy = row++;
+        gbc.insets = new Insets(2, 16, 6, 16);
         panel.add(paymentModeCombo, gbc);
 
-        markPaidBtn = FluentTheme.accentButton("✔  Mark as PAID");
+        gbc.gridx = 0; gbc.gridy = row++;
+        gbc.insets = new Insets(0, 16, 8, 16);
+        markPaidBtn = FluentTheme.accentButton("Mark as PAID");
         markPaidBtn.setFont(FluentTheme.FONT_SEMIBOLD);
         markPaidBtn.addActionListener(e -> onMarkAsPaid());
-        gbc.gridy = row++;
         panel.add(markPaidBtn, gbc);
 
-        // Spacer
-        gbc.gridy = row;
+        // Vertical spacer
+        gbc.gridx = 0; gbc.gridy = row;
+        gbc.gridwidth = 2;
         gbc.weighty = 1.0;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(0, 0, 0, 0);
         panel.add(new JLabel(), gbc);
 
         return panel;
@@ -350,6 +363,8 @@ public class BillingPanel extends JPanel {
                                 int row, String label, JLabel value) {
         gbc.gridwidth = 1;
         gbc.gridx = 0; gbc.gridy = row; gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.EAST;
         gbc.insets = new Insets(4, 16, 4, 4);
         JLabel capLbl = new JLabel(label);
         capLbl.setFont(FluentTheme.FONT_BODY);
@@ -357,7 +372,9 @@ public class BillingPanel extends JPanel {
         panel.add(capLbl, gbc);
 
         gbc.gridx = 1; gbc.weightx = 1.0;
-        gbc.insets = new Insets(4, 4, 4, 16);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(4, 4, 4, 12);
         panel.add(value, gbc);
     }
 
@@ -655,7 +672,7 @@ public class BillingPanel extends JPanel {
                                   String vehicleInfo, String customerInfo) {
         invoiceIdLabel.setText("#" + inv.getInvoiceId());
         invoiceDateLabel.setText(inv.getInvoiceDate() != null
-            ? inv.getInvoiceDate().format(DT_FMT) : "—");
+            ? inv.getInvoiceDate().format(DT_FMT) : "-");
         vehicleLabel.setText(vehicleInfo);
         customerLabel.setText(customerInfo);
 
@@ -689,19 +706,19 @@ public class BillingPanel extends JPanel {
 
     /** Resets all display fields to placeholder state. */
     private void clearDisplay() {
-        invoiceIdLabel.setText("—");
-        invoiceDateLabel.setText("—");
-        vehicleLabel.setText("—");
-        customerLabel.setText("—");
-        paymentStatusBadge.setText("—");
+        invoiceIdLabel.setText("-");
+        invoiceDateLabel.setText("-");
+        vehicleLabel.setText("-");
+        customerLabel.setText("-");
+        paymentStatusBadge.setText("-");
         paymentStatusBadge.setBackground(FluentTheme.SURFACE);
         paymentStatusBadge.setForeground(FluentTheme.TEXT_MUTED);
         paymentStatusBadge.setOpaque(false);
         itemTableModel.setData(new ArrayList<>());
-        labourTotalLabel.setText("₹ —");
-        partsTotalLabel.setText("₹ —");
-        taxAmountLabel.setText("₹ —");
-        grandTotalLabel.setText("₹ —");
+        labourTotalLabel.setText("-");
+        partsTotalLabel.setText("-");
+        taxAmountLabel.setText("-");
+        grandTotalLabel.setText("-");
         currentInvoice = null;
     }
 
@@ -727,8 +744,8 @@ public class BillingPanel extends JPanel {
      */
     private String[] resolveVehicleAndCustomer(int jobCardId) throws SQLException {
         Connection conn = DBConnection.getConnection();
-        String vehicleInfo  = "—";
-        String customerInfo = "—";
+        String vehicleInfo  = "-";
+        String customerInfo = "-";
 
         try {
             com.garage.dao.JobCardDAO jcDao = new com.garage.dao.JobCardDAO();
@@ -738,7 +755,7 @@ public class BillingPanel extends JPanel {
                 CustomerDAO cDao = new CustomerDAO();
                 Vehicle v = vDao.findById(conn, jc.getVehicleId()).orElse(null);
                 if (v != null) {
-                    vehicleInfo = v.getRegistrationNo() + " — " +
+                    vehicleInfo = v.getRegistrationNo() + " - " +
                                   v.getMake() + " " + v.getModel() +
                                   " (" + v.getYearOfMfr() + ")";
                     Customer c = cDao.findById(conn, v.getCustomerId()).orElse(null);

@@ -167,10 +167,10 @@ public class ServiceHistoryPanel extends JPanel {
         gbc.insets = new Insets(4, 8, 4, 16);
         gbc.anchor = GridBagConstraints.WEST;
 
-        vehicleDetailLabel = makeValueLabel("—");
+        vehicleDetailLabel = makeValueLabel("-");
         vehicleDetailLabel.setFont(FluentTheme.FONT_SEMIBOLD);
-        ownerDetailLabel   = makeValueLabel("—");
-        totalServicesLabel = makeValueLabel("—");
+        ownerDetailLabel   = makeValueLabel("-");
+        totalServicesLabel = makeValueLabel("-");
         totalServicesLabel.setForeground(FluentTheme.ACCENT);
         totalServicesLabel.setFont(FluentTheme.FONT_SEMIBOLD);
 
@@ -292,7 +292,7 @@ public class ServiceHistoryPanel extends JPanel {
                     if (summary != null) {
                         vehicleDetailLabel.setText(
                             summary.make + " " + summary.model +
-                            "  (" + summary.yearOfMfr + ")  —  " + summary.fuelType);
+                            "  (" + summary.yearOfMfr + ")  -  " + summary.fuelType);
                         vehicleDetailLabel.setForeground(FluentTheme.STATUS_SUCCESS);
                         ownerDetailLabel.setText(
                             summary.customerName + "  (Ph: " + summary.phone + ")");
@@ -328,16 +328,16 @@ public class ServiceHistoryPanel extends JPanel {
         for (ServiceHistoryRecord r : currentRecords) {
             sb.append(String.format("JC #%-4d | %s\n",
                 r.jobCardId,
-                r.appointmentDt != null ? r.appointmentDt.format(DT_FMT) : "—"));
+                r.appointmentDt != null ? r.appointmentDt.format(DT_FMT) : "-"));
             sb.append(String.format("  Service    : %s\n", r.serviceName));
             sb.append(String.format("  Technician : %s\n",
-                r.technicianName != null ? r.technicianName : "—"));
+                r.technicianName != null ? r.technicianName : "-"));
             sb.append(String.format("  Status     : %s\n", r.status));
             sb.append(String.format("  Labour Hrs : %.2f\n", r.labourHours));
             if (r.grandTotal != null) {
                 sb.append(String.format("  Invoice    : ₹%s  [%s]\n",
                     CURRENCY_FMT.format(r.grandTotal),
-                    r.paymentStatus != null ? r.paymentStatus : "—"));
+                    r.paymentStatus != null ? r.paymentStatus : "-"));
             } else {
                 sb.append("  Invoice    : Not yet generated\n");
             }
@@ -353,7 +353,7 @@ public class ServiceHistoryPanel extends JPanel {
         JOptionPane.showMessageDialog(
             this,
             new JScrollPane(textArea),
-            "Exported History — " + regNoField.getText().trim(),
+            "Exported History - " + regNoField.getText().trim(),
             JOptionPane.INFORMATION_MESSAGE
         );
     }
@@ -372,11 +372,11 @@ public class ServiceHistoryPanel extends JPanel {
 
     /** Resets the summary label values to placeholder state. */
     private void clearSummaryLabels() {
-        vehicleDetailLabel.setText("—");
+        vehicleDetailLabel.setText("-");
         vehicleDetailLabel.setForeground(FluentTheme.TEXT_MUTED);
-        ownerDetailLabel.setText("—");
+        ownerDetailLabel.setText("-");
         ownerDetailLabel.setForeground(FluentTheme.TEXT_MUTED);
-        totalServicesLabel.setText("—");
+        totalServicesLabel.setText("-");
         totalServicesLabel.setForeground(FluentTheme.TEXT_MUTED);
     }
 
@@ -448,14 +448,14 @@ public class ServiceHistoryPanel extends JPanel {
             ServiceHistoryRecord r = data.get(row);
             return switch (col) {
                 case 0 -> r.jobCardId;
-                case 1 -> r.appointmentDt != null ? r.appointmentDt.format(DT_FMT) : "—";
+                case 1 -> r.appointmentDt != null ? r.appointmentDt.format(DT_FMT) : "-";
                 case 2 -> r.status;
                 case 3 -> r.serviceName;
-                case 4 -> r.technicianName != null ? r.technicianName : "—";
-                case 5 -> r.labourHours > 0 ? String.format("%.2f", r.labourHours) : "—";
+                case 4 -> r.technicianName != null ? r.technicianName : "-";
+                case 5 -> r.labourHours > 0 ? String.format("%.2f", r.labourHours) : "-";
                 case 6 -> r.grandTotal != null
                     ? "₹ " + CURRENCY_FMT.format(r.grandTotal) : "Not invoiced";
-                case 7 -> r.paymentStatus != null ? r.paymentStatus : "—";
+                case 7 -> r.paymentStatus != null ? r.paymentStatus : "-";
                 default -> "";
             };
         }

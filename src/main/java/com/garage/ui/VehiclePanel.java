@@ -104,7 +104,7 @@ public class VehiclePanel extends JPanel {
         card.setBackground(FluentTheme.SURFACE);
         card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
 
-        card.add(FluentTheme.sectionHeader("Step 1 — Select Customer Owner"), BorderLayout.NORTH);
+        card.add(FluentTheme.sectionHeader("Step 1 - Select Customer Owner"), BorderLayout.NORTH);
 
         JPanel inner = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 10));
         inner.setBackground(FluentTheme.SURFACE);
@@ -144,7 +144,7 @@ public class VehiclePanel extends JPanel {
         card.setBackground(FluentTheme.SURFACE_ALT);
         card.setBorder(new MatteBorder(0, 0, 1, 0, FluentTheme.BORDER));
 
-        card.add(FluentTheme.sectionHeader("Step 2 — Register Vehicle"), BorderLayout.NORTH);
+        card.add(FluentTheme.sectionHeader("Step 2 - Register Vehicle"), BorderLayout.NORTH);
 
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(FluentTheme.SURFACE_ALT);
@@ -192,7 +192,7 @@ public class VehiclePanel extends JPanel {
 
         gbc.gridx = 2; gbc.weightx = 0;
         form.add(makeLabel("Colour"), gbc);
-        colorField = makeTextField("Optional — body colour");
+        colorField = makeTextField("Optional - body colour");
         gbc.gridx = 3; gbc.weightx = 1.0;
         form.add(colorField, gbc);
 

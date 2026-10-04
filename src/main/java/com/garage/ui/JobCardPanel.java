@@ -253,7 +253,7 @@ public class JobCardPanel extends JPanel {
         // ── Detail card ───────────────────────────────────────────────────────
         JPanel detailCard = new JPanel(new BorderLayout(0, 0));
         detailCard.setBackground(FluentTheme.SURFACE);
-        detailCard.add(FluentTheme.sectionHeader("Selected Job Card — Details"),
+        detailCard.add(FluentTheme.sectionHeader("Selected Job Card - Details"),
                        BorderLayout.NORTH);
 
         JPanel detailInner = new JPanel(new BorderLayout(4, 4));
@@ -502,7 +502,7 @@ public class JobCardPanel extends JPanel {
             });
             String regNo = (v != null) ? v.getRegistrationNo() : "ID:" + jc.getVehicleId();
 
-            String customerName = "—";
+            String customerName = "-";
             if (v != null) {
                 Customer c = customerCache.computeIfAbsent(v.getCustomerId(), id -> {
                     try { return customerDao.findById(conn, id).orElse(null); }
@@ -543,9 +543,9 @@ public class JobCardPanel extends JPanel {
         JobCardDisplayRow row = getSelectedRow();
         if (row == null) return;
 
-        String apptStr  = (row.appointmentDt != null) ? row.appointmentDt.format(DT_FMT) : "—";
-        String startStr = (row.startDt != null) ? row.startDt.format(DT_FMT) : "—";
-        String doneStr  = (row.completionDt != null) ? row.completionDt.format(DT_FMT) : "—";
+        String apptStr  = (row.appointmentDt != null) ? row.appointmentDt.format(DT_FMT) : "-";
+        String startStr = (row.startDt != null) ? row.startDt.format(DT_FMT) : "-";
+        String doneStr  = (row.completionDt != null) ? row.completionDt.format(DT_FMT) : "-";
 
         detailLabel.setText(
             String.format("  Job Card #%d  |  %s  |  %s  |  Appt: %s  |  Start: %s  |  Done: %s",
@@ -678,12 +678,12 @@ public class JobCardPanel extends JPanel {
                 case 1 -> r.vehicleRegNo;
                 case 2 -> r.customerName;
                 case 3 -> r.serviceName;
-                case 4 -> Objects.requireNonNullElse(r.technicianName, "—");
+                case 4 -> Objects.requireNonNullElse(r.technicianName, "-");
                 case 5 -> r.labourHours > 0
-                    ? String.format("%.2f hrs", r.labourHours) : "—";
+                    ? String.format("%.2f hrs", r.labourHours) : "-";
                 case 6 -> r.status;
                 case 7 -> (r.appointmentDt != null)
-                    ? r.appointmentDt.format(DT_FMT) : "—";
+                    ? r.appointmentDt.format(DT_FMT) : "-";
                 default -> "";
             };
         }
