@@ -12,7 +12,7 @@ VSMS uses a classic **three-tier desktop MVC/DAO** pattern adapted for a standal
 ┌─────────────────────────────────────────────────────────────────┐
 │                        PRESENTATION TIER                        │
 │                     Java Swing (ui/ package)                    │
-│   JFrame • JPanel • JTable • JDialog • JOptionPane             │
+│   JFrame • JPanel • JTable • JDialog • JOptionPane              │
 └───────────────────────────┬─────────────────────────────────────┘
                             │  calls (on EDT via SwingWorker)
 ┌───────────────────────────▼─────────────────────────────────────┐
@@ -29,7 +29,7 @@ VSMS uses a classic **three-tier desktop MVC/DAO** pattern adapted for a standal
                             │  connection from
 ┌───────────────────────────▼─────────────────────────────────────┐
 │                        INFRASTRUCTURE                           │
-│           DBConnection (util/) + Oracle DB (Docker)            │
+│           DBConnection (util/) + Oracle DB (Docker)             │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
